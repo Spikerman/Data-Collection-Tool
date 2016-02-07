@@ -79,6 +79,7 @@ public class AppInfoController {
                 System.out.println("json object result count: " + (int) jsonObject.get("resultCount"));
         } catch (Exception e) {
             System.out.println("network error");
+            System.out.println(e.getMessage());
             jsonObject = null;
         }
         return jsonObject;
@@ -98,8 +99,8 @@ public class AppInfoController {
             if (entryList.size() == (int) jsonObject.get("resultCount")) {
                 for (AppData appData : entryList) {
                     appData.name = jsonObject.getJSONArray("results").getJSONObject(i).get("trackName").toString();
-                    appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(i).get("averageUserRating");
-                    appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(i).get("userRatingCount");
+                    //appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(i).get("averageUserRating");
+                    //appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(i).get("userRatingCount");
 
                     System.out.println(i + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount);
 
