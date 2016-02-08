@@ -39,16 +39,22 @@ public class AppInfoController {
         while (idIterator.hasNext()) {
             String id = idIterator.next().toString();
             AppData appData = new AppData(id);
+            appData.ranking=x;
             appDataList.add(appData);
             x++;
 
         }
 
-        JSONObject jsonObject = getJSON(appDataList);
-        if (jsonObject != null) {
-            addAppDataInfo(appDataList, jsonObject);
-        } else {
-            System.out.println("jsonObject=null, fetch error");
+        List<List> subAppDataList = Toolkit.splitArray(appDataList, 100);
+
+        for (List dataList : subAppDataList) {
+            JSONObject jsonObject = getJSON(dataList);
+
+            if (jsonObject != null) {
+                addAppDataInfo(dataList, jsonObject);
+            } else {
+                System.out.println("jsonObject=null, fetch error");
+            }
         }
     }
 
@@ -95,16 +101,14 @@ public class AppInfoController {
 
     public void addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
         try {
-            int i = 0;
+            int index = 0;
             if (entryList.size() == (int) jsonObject.get("resultCount")) {
                 for (AppData appData : entryList) {
-                    appData.name = jsonObject.getJSONArray("results").getJSONObject(i).get("trackName").toString();
-                    //appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(i).get("averageUserRating");
-                    //appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(i).get("userRatingCount");
-
-                    System.out.println(i + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount);
-
-                    i++;
+                    appData.name = jsonObject.getJSONArray("results").getJSONObject(index).get("trackName").toString();
+                    //appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRating");
+                    //appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCount");
+                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount);
+                    index++;
                 }
             } else {
                 System.out.println("the size of app data list does not equal to the amount of return jsonObject!");

@@ -22,7 +22,7 @@ public class FloatUpRankPageProcessor implements PageProcessor {
 
         //get app id from the list
         List<String> appIdList = page.getHtml().links().regex("appid=[0-9]{8,11}&").replace("appid=", "").replace("&", "").all();
-        System.out.println("app id account: " + appIdList.size());
+        System.out.println("app id amount: " + appIdList.size());
 
         int i=1;
         for (String id : appIdList) {

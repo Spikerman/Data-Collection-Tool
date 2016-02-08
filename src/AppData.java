@@ -4,7 +4,7 @@
 public class AppData {
     public String name;
     public String id;
-    public int rank;
+    public int ranking;
     public double averageUserRating;
     public double averageUserRatingForCurrentVersion;
     public int userRatingCount;
@@ -35,11 +35,11 @@ public class AppData {
         this.id = id;
     }
 
-    public int getRank() {
-        return rank;
+    public int getRanking() {
+        return ranking;
     }
 
-    public void setRank(int rank) {
-        this.rank = rank;
+    public void setRanking(int ranking) {
+        this.ranking = ranking;
     }
 }
