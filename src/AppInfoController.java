@@ -39,7 +39,7 @@ public class AppInfoController {
         while (idIterator.hasNext()) {
             String id = idIterator.next().toString();
             AppData appData = new AppData(id);
-            appData.ranking=x;
+            appData.ranking = x;
             appDataList.add(appData);
             x++;
 
@@ -105,8 +105,17 @@ public class AppInfoController {
             if (entryList.size() == (int) jsonObject.get("resultCount")) {
                 for (AppData appData : entryList) {
                     appData.name = jsonObject.getJSONArray("results").getJSONObject(index).get("trackName").toString();
-                    //appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRating");
-                    //appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCount");
+
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("averageUserRating"))
+                        appData.averageUserRating = 0;
+                    else
+                        appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRating");
+
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("userRatingCount"))
+                        appData.userRatingCount = 0;
+                    else
+                        appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCount");
+
                     System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount);
                     index++;
                 }
