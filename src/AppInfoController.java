@@ -116,7 +116,15 @@ public class AppInfoController {
                     else
                         appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCount");
 
-                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount);
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("userRatingCountForCurrentVersion"))
+                        appData.userRatingCountForCurrentVersion = 0;
+                    else
+                        appData.userRatingCountForCurrentVersion = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCountForCurrentVersion");
+
+
+                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount+"  "
+                    +appData.userRatingCountForCurrentVersion);
+
                     index++;
                 }
             } else {

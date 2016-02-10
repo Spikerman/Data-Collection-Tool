@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,5 +26,19 @@ public class Toolkit {
         }
 
         return subAryList;
+    }
+
+    public static List<String> removeDuplicate(List originalList) {
+        HashSet<String> hashSet = new HashSet<>();
+        List<String> newList = new ArrayList<>();
+        for (Iterator iterator = originalList.iterator(); iterator.hasNext(); ) {
+            String element = (String) iterator.next();
+            if (hashSet.add(element)) {
+                newList.add(element);
+            }
+        }
+        originalList.clear();
+        originalList.addAll(newList);
+        return originalList;
     }
 }

@@ -25,16 +25,13 @@ public class AppStorePaidRankProcessor implements PageProcessor {
     public void process(Page page) {
 
 
-        List<String> appNames = page.getHtml().xpath("//*[@id=\"main\"]/section/ul/li/h3/a/text()").all();
+        //List<String> appNames = page.getHtml().xpath("//*[@id=\"main\"]/section/ul/li/h3/a/text()").all();
         List<String> appIdList = page.getHtml().links().regex("id[0-9]{8,11}").replace("id", "").all();
 
+        appIdList = Toolkit.removeDuplicate(appIdList);
 
-        appIdList = removeDuplicate(appIdList);
-
-        //the last app is the Apple Store, remove it!
+        //the last app is the "Apple Store" app, remove it!
         appIdList.remove(appIdList.size() - 1);
-
-        //the last app is the Apple Store, remove it!
 
         page.putField("paidIdList", appIdList);
 
@@ -45,18 +42,8 @@ public class AppStorePaidRankProcessor implements PageProcessor {
         return site;
     }
 
-    public List<String> removeDuplicate(List originalList) {
-        HashSet<String> hashSet = new HashSet<>();
-        List<String> newList = new ArrayList<>();
-        for (Iterator iterator = originalList.iterator(); iterator.hasNext(); ) {
-            String element = (String) iterator.next();
-            if (hashSet.add(element)) {
-                newList.add(element);
-            }
-        }
-        originalList.clear();
-        originalList.addAll(newList);
-        return originalList;
-    }
+
+
+
 
 }
