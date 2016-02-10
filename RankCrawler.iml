@@ -13,7 +13,11 @@
           <root url="file://$MODULE_DIR$/lib" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.ideaLibSources/webmagic-extension-0.5.1-sources.jar!/" />
+          <root url="jar://$USER_HOME$/.ideaLibSources/webmagic-core-0.5.1-sources.jar!/" />
+          <root url="jar://$USER_HOME$/.ideaLibSources/jsoup-1.7.2-sources.jar!/" />
+        </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
     </orderEntry>
