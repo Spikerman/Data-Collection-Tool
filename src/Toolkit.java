@@ -1,7 +1,7 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by chenhao on 2/8/16.
@@ -40,5 +40,20 @@ public class Toolkit {
         originalList.clear();
         originalList.addAll(newList);
         return originalList;
+    }
+
+    public static Date chineseDateConvert(String dateString) {
+        Date date=null;
+        try {
+            String year = dateString.substring(0, 4);
+            String month = dateString.substring(5, 7);
+            String day = dateString.substring(8, 10);
+            String result = year + "." + month + "." + day;
+            DateFormat formatterCH = new SimpleDateFormat("yyyy.MM.dd");
+            date = formatterCH.parse(result);
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        return date;
     }
 }
