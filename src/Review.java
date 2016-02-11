@@ -75,7 +75,7 @@ public class Review implements Comparable<Review> {
         Review review = (Review) o;
 
         if (!appId.equals(review.appId)) return false;
-        if (!id.equals(review.id)) return false;
+//        if (!id.equals(review.id)) return false;  //review id has not been defined yet
         if (!author.equals(review.author)) return false;
         if (Double.compare(review.rate, rate) != 0) return false;
         if (title != null ? !title.equals(review.title) : review.title != null) return false;
@@ -97,6 +97,7 @@ public class Review implements Comparable<Review> {
         result = 31 * result + (body != null ? body.hashCode() : 0);
         result = 31 * result + (date != null ? date.hashCode() : 0);
         result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (author != null ? author.hashCode() : 0);
         return result;
     }
 

@@ -28,11 +28,11 @@ public class Toolkit {
         return subAryList;
     }
 
-    public static List<String> removeDuplicate(List originalList) {
-        HashSet<String> hashSet = new HashSet<>();
-        List<String> newList = new ArrayList<>();
+    public static List removeDuplicate(List originalList) {
+        HashSet hashSet = new HashSet();
+        List newList = new ArrayList();
         for (Iterator iterator = originalList.iterator(); iterator.hasNext(); ) {
-            String element = (String) iterator.next();
+            Object element =  iterator.next();
             if (hashSet.add(element)) {
                 newList.add(element);
             }
