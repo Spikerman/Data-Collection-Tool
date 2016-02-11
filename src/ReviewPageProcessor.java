@@ -15,11 +15,10 @@ import java.util.*;
  */
 public class ReviewPageProcessor implements PageProcessor {
     public static final String APP_STORE_REVIEW_URL
-            = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=414478124&page=%d&sort=4";
-    public static final String INITIAL_URL =
-            "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=414478124&page=1&sort=4";
+            = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=%s&page=%d&sort=4";
 
-
+    public static String INITIAL_URL;
+    public static String id;
     public static int pageCount;
     public static Elements pageNumbers;
     public static List<String> pageUrls;
@@ -31,16 +30,18 @@ public class ReviewPageProcessor implements PageProcessor {
             .addHeader("X-Apple-Store-Front", "143465,12")
             .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
 
-    public ReviewPageProcessor() {
+    public ReviewPageProcessor(String entryId) {
+        INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
+        id = entryId;
         reviews = new HashSet<>();
         System.out.println("ReviewPageProcessor Start!");
 
     }
 
     public static void main(String args[]) {
-        Spider.create(new ReviewPageProcessor())
+        Spider.create(new ReviewPageProcessor("931179407"))
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
-                .thread(10)
+                .thread(20)
                 .run();
 
     }
@@ -52,14 +53,14 @@ public class ReviewPageProcessor implements PageProcessor {
         pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
         pageUrls = addUrls(pageCount);
         page.addTargetRequests(pageUrls);
-        reviewList = getReviewsFromPage("414478124", page);
+        reviewList = getReviewsFromPage(id, page);
 //        consoleOutPut(reviews);
         reviewList = Toolkit.removeDuplicate(reviewList);
         consoleOutPut(reviewList);
 
         reviews.addAll(reviewList);
         System.out.println("-------------------------------------------------------");
-        System.out.println("total number: "+reviews.size());
+        System.out.println("total number: " + reviews.size());
         System.out.println("-------------------------------------------------------");
 
 
@@ -105,12 +106,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public void consoleOutPut(Set<Review> reviewList) {
 
         for (Review review : reviewList) {
-            //System.out.printf("%-20s",review.getTitle());
-            //System.out.printf("%-20s",review.getBody());
             System.out.printf("%-50s %-50s %-50s %tF", review.getAuthor(), review.getRate(), review.getVersion(), review.getDate());
-//            System.out.printf("%-50s",review.getRate());
-//            System.out.printf("%-50s",review.getVersion());
-//            System.out.printf("%tF",review.getDate());
             System.out.println();
 
         }
@@ -128,7 +124,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public List<String> addUrls(int pageCount) {
         List<String> urlList = new ArrayList<>();
         for (int i = 1; i < pageCount; i++) {
-            String urlString = String.format(APP_STORE_REVIEW_URL, i + 1);
+            String urlString = String.format(APP_STORE_REVIEW_URL, id, i + 1);
             urlList.add(urlString);
         }
         return urlList;
