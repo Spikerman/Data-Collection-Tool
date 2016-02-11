@@ -41,6 +41,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public static void main(String args[]) {
         Spider.create(new ReviewPageProcessor("931179407"))
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
+                .addPipeline(new ReviewPagePipeline())
                 .thread(20)
                 .run();
 
@@ -59,11 +60,12 @@ public class ReviewPageProcessor implements PageProcessor {
         consoleOutPut(reviewList);
 
         reviews.addAll(reviewList);
+
         System.out.println("-------------------------------------------------------");
         System.out.println("total number: " + reviews.size());
         System.out.println("-------------------------------------------------------");
 
-
+        page.putField("results", reviews);
     }
 
     @Override
