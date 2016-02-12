@@ -1,3 +1,5 @@
+import com.vdurmont.emoji.EmojiParser;
+import emoji4j.EmojiUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -80,6 +82,7 @@ public class ReviewPageProcessor implements PageProcessor {
 
     //construct the review object
     public Review getReview(String appId, Element titleElement, Element review, Element user) throws ParseException {
+
         String starsString = titleElement.nextElementSibling().attr("aria-label"); //string that contains number of stars e.g. 1星
         String title = titleElement.text(); // string contains a title
         String reviewBody = review.text(); // review itself
@@ -87,7 +90,8 @@ public class ReviewPageProcessor implements PageProcessor {
         double rate = Double.parseDouble(starsString.substring(0, 1));
         String[] info = userInfo.split("-");
         String version = info[info.length - 2].trim().split(" ")[1];
-        String author = info[info.length - 3].substring(5);
+        String author = info[info.length - 3];
+        //author= EmojiParser.parseToAliases(author);
         Date date;
         String dateString = info[info.length - 1].trim();
         date = Toolkit.chineseDateConvert(dateString);
@@ -116,7 +120,6 @@ public class ReviewPageProcessor implements PageProcessor {
         for (Review review : reviewList) {
             System.out.printf("%-50s %-50s %-50s %tF", review.getAuthor(), review.getRate(), review.getVersion(), review.getDate());
             System.out.println();
-
         }
     }
 
