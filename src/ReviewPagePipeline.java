@@ -13,10 +13,6 @@ public class ReviewPagePipeline implements Pipeline {
     public void process(ResultItems resultItems, Task task) {
 
         Set resultSet = resultItems.get("results");
-        System.out.println("*******************************************************");
-        System.out.println("-------------------------------------------------------");
-        System.out.println("final total number: " + resultSet.size());
-        System.out.println("-------------------------------------------------------");
-
+        
     }
 }

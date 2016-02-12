@@ -32,7 +32,7 @@ public class Toolkit {
         HashSet hashSet = new HashSet();
         List newList = new ArrayList();
         for (Iterator iterator = originalList.iterator(); iterator.hasNext(); ) {
-            Object element =  iterator.next();
+            Object element = iterator.next();
             if (hashSet.add(element)) {
                 newList.add(element);
             }
@@ -42,8 +42,32 @@ public class Toolkit {
         return originalList;
     }
 
+    public static Collection removeDuplicate(Collection originalCollection) {
+        HashSet hashSet = new HashSet();
+        List newList = new ArrayList();
+        for (Iterator iterator = originalCollection.iterator(); iterator.hasNext(); ) {
+            Object element = iterator.next();
+            if (hashSet.add(element)) {
+                newList.add(element);
+            }
+        }
+        originalCollection.clear();
+        originalCollection.addAll(newList);
+        return originalCollection;
+    }
+
+    public static List testRemove(List list){
+        HashSet hashSet=new HashSet();
+        List resultList=new ArrayList<>();
+        hashSet.addAll(list);
+        resultList.addAll(hashSet);
+        //list.clear();
+        return resultList;
+
+    }
+
     public static Date chineseDateConvert(String dateString) {
-        Date date=null;
+        Date date = null;
         try {
             String year = dateString.substring(0, 4);
             String month = dateString.substring(5, 7);
@@ -51,7 +75,7 @@ public class Toolkit {
             String result = year + "." + month + "." + day;
             DateFormat formatterCH = new SimpleDateFormat("yyyy.MM.dd");
             date = formatterCH.parse(result);
-        }catch(ParseException e){
+        } catch (ParseException e) {
             e.printStackTrace();
         }
         return date;

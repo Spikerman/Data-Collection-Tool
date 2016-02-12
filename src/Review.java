@@ -11,16 +11,17 @@ public class Review implements Comparable<Review> {
     private String body;
     private Date date;
     private String version;
-    private String author;
+    private String authorId;
 
-    public Review(String appId, double rate, String title, String body, Date date, String version, String author) {
+    public Review(String appId, String id, double rate, String title, String body, Date date, String version, String authorId) {
         this.appId = appId;
+        this.id=id;
         this.rate = rate;
         this.title = title;
         this.body = body;
         this.date = date;
         this.version = version;
-        this.author = author;
+        this.authorId = authorId;
     }
 
     public String getId() {
@@ -31,8 +32,8 @@ public class Review implements Comparable<Review> {
         this.id = id;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAuthorId() {
+        return authorId;
     }
 
     public String getAppId() {
@@ -75,8 +76,8 @@ public class Review implements Comparable<Review> {
         Review review = (Review) o;
 
         if (!appId.equals(review.appId)) return false;
-//        if (!id.equals(review.id)) return false;  //review id has not been defined yet
-        if (!author.equals(review.author)) return false;
+        if (!id.equals(review.id)) return false;
+        if (!authorId.equals(review.authorId)) return false;
         if (Double.compare(review.rate, rate) != 0) return false;
         if (title != null ? !title.equals(review.title) : review.title != null) return false;
         if (body != null ? !body.equals(review.body) : review.body != null) return false;
@@ -97,7 +98,7 @@ public class Review implements Comparable<Review> {
         result = 31 * result + (body != null ? body.hashCode() : 0);
         result = 31 * result + (date != null ? date.hashCode() : 0);
         result = 31 * result + (version != null ? version.hashCode() : 0);
-        result = 31 * result + (author != null ? author.hashCode() : 0);
+        result = 31 * result + (authorId != null ? authorId.hashCode() : 0);
         return result;
     }
 

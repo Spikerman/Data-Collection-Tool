@@ -1,5 +1,3 @@
-import com.vdurmont.emoji.EmojiParser;
-import emoji4j.EmojiUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -81,7 +79,7 @@ public class ReviewPageProcessor implements PageProcessor {
     }
 
     //construct the review object
-    public Review getReview(String appId, Element titleElement, Element review, Element user) throws ParseException {
+    public Review getReview(String appId, String reviewId, Element titleElement, Element review, Element user, String userId) throws ParseException {
 
         String starsString = titleElement.nextElementSibling().attr("aria-label"); //string that contains number of stars e.g. 1星
         String title = titleElement.text(); // string contains a title
@@ -90,24 +88,29 @@ public class ReviewPageProcessor implements PageProcessor {
         double rate = Double.parseDouble(starsString.substring(0, 1));
         String[] info = userInfo.split("-");
         String version = info[info.length - 2].trim().split(" ")[1];
-        String author = info[info.length - 3];
-        //author= EmojiParser.parseToAliases(author);
+
         Date date;
         String dateString = info[info.length - 1].trim();
         date = Toolkit.chineseDateConvert(dateString);
-        return new Review(appId, rate, title, reviewBody, date, version, author);
+        return new Review(appId, reviewId, rate, title, reviewBody, date, version, userId);
     }
 
     //get all reviews from the current page
     public List<Review> getReviewsFromPage(String appId, Page page) {
         List<Review> reviewList = new ArrayList<>();
         Document document = page.getHtml().getDocument();
+
+        List<String> userProfileIdList = page.getHtml().links().regex("userProfileId=[0-9]*").replace("userProfileId=", "").all();
+        List<String> reviewIdList = page.getHtml().regex("userReviewId=[0-9]*").replace("userReviewId=", "").all();
+        List x=Toolkit.testRemove(reviewIdList);
+
         try {
             Elements titles = document.getElementsByClass("customerReviewTitle");
             Elements reviews = document.getElementsByClass("content");
             Elements users = document.getElementsByClass("user-info");
+
             for (int i = 0; i < reviews.size(); i++) {
-                reviewList.add(getReview(appId, titles.get(i), reviews.get(i), users.get(i)));
+                reviewList.add(getReview(appId, reviewIdList.get(i), titles.get(i), reviews.get(i), users.get(i), userProfileIdList.get(i)));
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -118,7 +121,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public void consoleOutPut(Set<Review> reviewList) {
 
         for (Review review : reviewList) {
-            System.out.printf("%-50s %-50s %-50s %tF", review.getAuthor(), review.getRate(), review.getVersion(), review.getDate());
+            System.out.printf("%-50s %-50s %-50s %tF", review.getAuthorId(), review.getRate(), review.getVersion(), review.getDate());
             System.out.println();
         }
     }
@@ -127,7 +130,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public void consoleOutPut(List<Review> reviewList) {
 
         for (Review review : reviewList) {
-            System.out.printf("%-50s %-50s %-50s %tF", review.getAuthor(), review.getRate(), review.getVersion(), review.getDate());
+            System.out.printf("%-50s %-50s  %-50s %-50s %tF", review.getAuthorId(), review.getId(), review.getRate(), review.getVersion(), review.getDate());
             System.out.println();
 
         }
