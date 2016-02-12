@@ -22,10 +22,10 @@ public class ReviewPageProcessor implements PageProcessor {
     public static int pageCount;
     public static Elements pageNumbers;
     public static List<String> pageUrls;
-    public List<Review> reviewList = new ArrayList<>();
-    public Set<Review> reviews;
+    public Set<Review> reviewSet;
 
     private Site site = Site.me().setRetryTimes(5).setSleepTime(1000)
+            .setCharset("utf-8")
             .setUserAgent("iTunes/12.3.2 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/533.21.1")
             .addHeader("X-Apple-Store-Front", "143465,12")
             .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
@@ -33,7 +33,10 @@ public class ReviewPageProcessor implements PageProcessor {
     public ReviewPageProcessor(String entryId) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
-        reviews = new HashSet<>();
+
+        //in order to keep thread-safe
+        reviewSet = Collections.synchronizedSet(new HashSet<>());
+
         System.out.println("ReviewPageProcessor Start!");
 
     }
@@ -49,23 +52,25 @@ public class ReviewPageProcessor implements PageProcessor {
 
     @Override
     public void process(Page page) {
+
         Document document = page.getHtml().getDocument();
         pageNumbers = document.getElementsByAttribute("total-number-of-pages");
-        pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
-        pageUrls = addUrls(pageCount);
-        page.addTargetRequests(pageUrls);
-        reviewList = getReviewsFromPage(id, page);
-//        consoleOutPut(reviews);
-        reviewList = Toolkit.removeDuplicate(reviewList);
-        consoleOutPut(reviewList);
 
-        reviews.addAll(reviewList);
+        if (pageNumbers.size() != 0) {
+            pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
+            pageUrls = addUrls(pageCount);
+            page.addTargetRequests(pageUrls);
+            List reviewList = getReviewsFromPage(id, page);
+            reviewList = Toolkit.removeDuplicate(reviewList);
+            consoleOutPut(reviewList);
 
-        System.out.println("-------------------------------------------------------");
-        System.out.println("total number: " + reviews.size());
-        System.out.println("-------------------------------------------------------");
+            reviewSet.addAll(reviewList);
 
-        page.putField("results", reviews);
+            System.out.println("-------------------------------------------------------");
+            System.out.println("total number: " + reviewSet.size());
+            System.out.println("-------------------------------------------------------");
+        }
+        page.putField("results", reviewSet);
     }
 
     @Override
@@ -73,6 +78,7 @@ public class ReviewPageProcessor implements PageProcessor {
         return site;
     }
 
+    //construct the review object
     public Review getReview(String appId, Element titleElement, Element review, Element user) throws ParseException {
         String starsString = titleElement.nextElementSibling().attr("aria-label"); //string that contains number of stars e.g. 1星
         String title = titleElement.text(); // string contains a title
@@ -81,14 +87,14 @@ public class ReviewPageProcessor implements PageProcessor {
         double rate = Double.parseDouble(starsString.substring(0, 1));
         String[] info = userInfo.split("-");
         String version = info[info.length - 2].trim().split(" ")[1];
-        String author = info[info.length - 3];
+        String author = info[info.length - 3].substring(5);
         Date date;
         String dateString = info[info.length - 1].trim();
         date = Toolkit.chineseDateConvert(dateString);
         return new Review(appId, rate, title, reviewBody, date, version, author);
-
     }
 
+    //get all reviews from the current page
     public List<Review> getReviewsFromPage(String appId, Page page) {
         List<Review> reviewList = new ArrayList<>();
         Document document = page.getHtml().getDocument();
@@ -114,6 +120,7 @@ public class ReviewPageProcessor implements PageProcessor {
         }
     }
 
+    //output every review content
     public void consoleOutPut(List<Review> reviewList) {
 
         for (Review review : reviewList) {
@@ -123,6 +130,7 @@ public class ReviewPageProcessor implements PageProcessor {
         }
     }
 
+    //add the following review page url, start from the second page
     public List<String> addUrls(int pageCount) {
         List<String> urlList = new ArrayList<>();
         for (int i = 1; i < pageCount; i++) {
