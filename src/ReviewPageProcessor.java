@@ -14,9 +14,9 @@ import java.util.*;
  * Created by chenhao on 2/10/16.
  */
 public class ReviewPageProcessor implements PageProcessor {
+
     public static final String APP_STORE_REVIEW_URL
             = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=%s&page=%d&sort=4";
-
     public static String INITIAL_URL;
     public static String id;
     public static int pageCount;
@@ -24,7 +24,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public static List<String> pageUrls;
     public Set<Review> reviewSet;
 
-    private Site site = Site.me().setRetryTimes(5).setSleepTime(1000)
+    private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(500).setTimeOut(100000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.3.2 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/533.21.1")
             .addHeader("X-Apple-Store-Front", "143465,12")
@@ -92,6 +92,7 @@ public class ReviewPageProcessor implements PageProcessor {
         Date date;
         String dateString = info[info.length - 1].trim();
         date = Toolkit.chineseDateConvert(dateString);
+
         return new Review(appId, reviewId, rate, title, reviewBody, date, version, userId);
     }
 
@@ -102,7 +103,7 @@ public class ReviewPageProcessor implements PageProcessor {
 
         List<String> userProfileIdList = page.getHtml().links().regex("userProfileId=[0-9]*").replace("userProfileId=", "").all();
         List<String> reviewIdList = page.getHtml().regex("userReviewId=[0-9]*").replace("userReviewId=", "").all();
-        List x=Toolkit.testRemove(reviewIdList);
+        List x = Toolkit.testRemove(reviewIdList);
 
         try {
             Elements titles = document.getElementsByClass("customerReviewTitle");
