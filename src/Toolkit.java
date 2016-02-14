@@ -28,6 +28,7 @@ public class Toolkit {
         return subAryList;
     }
 
+    //the element order is the same as the original collection
     public static List removeDuplicate(List originalList) {
         HashSet hashSet = new HashSet();
         List newList = new ArrayList();
@@ -56,12 +57,12 @@ public class Toolkit {
         return originalCollection;
     }
 
+    //the element order is NOT the same as the original collection
     public static List testRemove(List list){
         HashSet hashSet=new HashSet();
         List resultList=new ArrayList<>();
         hashSet.addAll(list);
         resultList.addAll(hashSet);
-        //list.clear();
         return resultList;
 
     }

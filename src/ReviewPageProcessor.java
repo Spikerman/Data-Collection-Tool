@@ -22,7 +22,12 @@ public class ReviewPageProcessor implements PageProcessor {
     public static int pageCount;
     public static Elements pageNumbers;
     public static List<String> pageUrls;
-    public Set<Review> reviewSet;
+
+
+    public boolean isFirstPage = true;
+
+    //in order to keep thread-safe
+    public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
 
     private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(500).setTimeOut(100000)
             .setCharset("utf-8")
@@ -33,12 +38,7 @@ public class ReviewPageProcessor implements PageProcessor {
     public ReviewPageProcessor(String entryId) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
-
-        //in order to keep thread-safe
-        reviewSet = Collections.synchronizedSet(new HashSet<>());
-
         System.out.println("ReviewPageProcessor Start!");
-
     }
 
     public static void main(String args[]) {
@@ -57,9 +57,12 @@ public class ReviewPageProcessor implements PageProcessor {
         pageNumbers = document.getElementsByAttribute("total-number-of-pages");
 
         if (pageNumbers.size() != 0) {
-            pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
-            pageUrls = addUrls(pageCount);
-            page.addTargetRequests(pageUrls);
+            if (isFirstPage) {
+
+                pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
+                pageUrls = addUrls(pageCount);
+                page.addTargetRequests(pageUrls);
+            }
             List reviewList = getReviewsFromPage(id, page);
             reviewList = Toolkit.removeDuplicate(reviewList);
             consoleOutPut(reviewList);
@@ -69,8 +72,9 @@ public class ReviewPageProcessor implements PageProcessor {
             System.out.println("-------------------------------------------------------");
             System.out.println("total number: " + reviewSet.size());
             System.out.println("-------------------------------------------------------");
+
+            isFirstPage = false;
         }
-        page.putField("results", reviewSet);
     }
 
     @Override
@@ -88,10 +92,8 @@ public class ReviewPageProcessor implements PageProcessor {
         double rate = Double.parseDouble(starsString.substring(0, 1));
         String[] info = userInfo.split("-");
         String version = info[info.length - 2].trim().split(" ")[1];
-
-        Date date;
         String dateString = info[info.length - 1].trim();
-        date = Toolkit.chineseDateConvert(dateString);
+        Date date = Toolkit.chineseDateConvert(dateString);
 
         return new Review(appId, reviewId, rate, title, reviewBody, date, version, userId);
     }
@@ -101,17 +103,18 @@ public class ReviewPageProcessor implements PageProcessor {
         List<Review> reviewList = new ArrayList<>();
         Document document = page.getHtml().getDocument();
 
-        List<String> userProfileIdList = page.getHtml().links().regex("userProfileId=[0-9]*").replace("userProfileId=", "").all();
+        List<String> userIdList = page.getHtml().links().regex("userProfileId=[0-9]*").replace("userProfileId=", "").all();
         List<String> reviewIdList = page.getHtml().regex("userReviewId=[0-9]*").replace("userReviewId=", "").all();
-        List x = Toolkit.testRemove(reviewIdList);
+
+        reviewIdList = Toolkit.removeDuplicate(reviewIdList);
 
         try {
             Elements titles = document.getElementsByClass("customerReviewTitle");
             Elements reviews = document.getElementsByClass("content");
             Elements users = document.getElementsByClass("user-info");
 
-            for (int i = 0; i < reviews.size(); i++) {
-                reviewList.add(getReview(appId, reviewIdList.get(i), titles.get(i), reviews.get(i), users.get(i), userProfileIdList.get(i)));
+            for (int i = 0; i < reviewIdList.size(); i++) {
+                reviewList.add(getReview(appId, reviewIdList.get(i), titles.get(i), reviews.get(i), users.get(i), userIdList.get(i)));
             }
         } catch (ParseException e) {
             e.printStackTrace();
