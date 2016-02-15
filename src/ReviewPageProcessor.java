@@ -29,7 +29,7 @@ public class ReviewPageProcessor implements PageProcessor {
     //in order to keep thread-safe
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
 
-    private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(500).setTimeOut(100000)
+    private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(100).setTimeOut(200000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.3.2 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/533.21.1")
             .addHeader("X-Apple-Store-Front", "143465,12")
@@ -42,12 +42,38 @@ public class ReviewPageProcessor implements PageProcessor {
     }
 
     public static void main(String args[]) {
-        Spider.create(new ReviewPageProcessor("931179407"))
+
+        String sql = "insert into Review (id,appId,rate,title,version,date) values(?,?,?,?,?,?)";
+        DbHelper dbHelper = new DbHelper();
+        dbHelper.setPst(sql);
+
+        ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("685872176");
+        Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
                 .addPipeline(new ReviewPagePipeline())
                 .thread(20)
                 .run();
 
+        Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
+        for (Review review : reviewSet) {
+            try {
+                dbHelper.pst.setString(1, review.getId());
+                dbHelper.pst.setString(2, review.getAppId());
+                dbHelper.pst.setDouble(3, review.getRate());
+                dbHelper.pst.setString(4, review.getTitle());
+                dbHelper.pst.setString(5, review.getVersion());
+                dbHelper.pst.setDate(6, new java.sql.Date(review.getDate().getTime()));
+
+                dbHelper.pst.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public Set<Review> getReviewSet() {
+        return reviewSet;
     }
 
     @Override
@@ -58,7 +84,6 @@ public class ReviewPageProcessor implements PageProcessor {
 
         if (pageNumbers.size() != 0) {
             if (isFirstPage) {
-
                 pageCount = Integer.valueOf(pageNumbers.get(0).attr("total-number-of-pages"));
                 pageUrls = addUrls(pageCount);
                 page.addTargetRequests(pageUrls);

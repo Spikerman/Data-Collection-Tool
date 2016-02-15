@@ -12,6 +12,5 @@ public class ReviewPagePipeline implements Pipeline {
     @Override
     public void process(ResultItems resultItems, Task task) {
 
-
     }
 }
