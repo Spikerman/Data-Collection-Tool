@@ -8,6 +8,8 @@ import us.codecraft.webmagic.processor.PageProcessor;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -19,15 +21,16 @@ public class ReviewPageProcessor implements PageProcessor {
             = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=%s&page=%d&sort=4";
     public static String INITIAL_URL;
     public static String id;
-    public static int pageCount;
-    public static Elements pageNumbers;
     public static List<String> pageUrls;
-
-
+    private static int pageCount;
+    private static Elements pageNumbers;
     public boolean isFirstPage = true;
 
     //in order to keep thread-safe
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
+
+    private Pattern userIdPattern = Pattern.compile("\\d+");
+    private Pattern reviewIdPattern = Pattern.compile("\\d+");
 
     private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(100).setTimeOut(200000)
             .setCharset("utf-8")
@@ -43,10 +46,9 @@ public class ReviewPageProcessor implements PageProcessor {
 
     public static void main(String args[]) {
 
-        String sql = "insert into Review (id,appId,rate,title,version,date) values(?,?,?,?,?,?)";
+        String sql = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
         DbHelper dbHelper = new DbHelper();
         dbHelper.setPst(sql);
-
         ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("685872176");
         Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
@@ -60,10 +62,8 @@ public class ReviewPageProcessor implements PageProcessor {
                 dbHelper.pst.setString(1, review.getId());
                 dbHelper.pst.setString(2, review.getAppId());
                 dbHelper.pst.setDouble(3, review.getRate());
-                dbHelper.pst.setString(4, review.getTitle());
-                dbHelper.pst.setString(5, review.getVersion());
-                dbHelper.pst.setDate(6, new java.sql.Date(review.getDate().getTime()));
-
+                dbHelper.pst.setString(4, review.getVersion());
+                dbHelper.pst.setDate(5, new java.sql.Date(review.getDate().getTime()));
                 dbHelper.pst.executeUpdate();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -89,7 +89,7 @@ public class ReviewPageProcessor implements PageProcessor {
                 page.addTargetRequests(pageUrls);
             }
             List reviewList = getReviewsFromPage(id, page);
-            reviewList = Toolkit.removeDuplicate(reviewList);
+
             consoleOutPut(reviewList);
 
             reviewSet.addAll(reviewList);
@@ -107,39 +107,46 @@ public class ReviewPageProcessor implements PageProcessor {
         return site;
     }
 
-    //construct the review object
-    public Review getReview(String appId, String reviewId, Element titleElement, Element review, Element user, String userId) throws ParseException {
 
-        String starsString = titleElement.nextElementSibling().attr("aria-label"); //string that contains number of stars e.g. 1星
-        String title = titleElement.text(); // string contains a title
-        String reviewBody = review.text(); // review itself
+    public Review getReview(String appId, Element customerReview) throws ParseException {
+
+        Element user = customerReview.getElementsByClass("user-info").first();
+        String reviewIdString = customerReview.getElementsByClass("report-a-concern").first().attr("report-a-concern-fragment-url");
+        String rateString = customerReview.getElementsByClass("rating").first().attr("aria-label"); //string that contains number of stars e.g. 1星
         String userInfo = user.text(); // string contains nickname, version of the app and date that can be splitted by dash e.g. 评论人： 魅影伈 - 版本 6.3.13 - 2016年02月10日
-        double rate = Double.parseDouble(starsString.substring(0, 1));
+        String userIdString = user.child(0).attr("href");
+
+        Matcher userIdMatcher = userIdPattern.matcher(userIdString);
+        userIdMatcher.find();
+        String userId = userIdMatcher.group();
+
+
+        Matcher reviewIdMatcher = reviewIdPattern.matcher(reviewIdString);
+        reviewIdMatcher.find();
+        String reviewId = reviewIdMatcher.group();
+
+
         String[] info = userInfo.split("-");
         String version = info[info.length - 2].trim().split(" ")[1];
+        double rate = Double.parseDouble(rateString.substring(0, 1));
         String dateString = info[info.length - 1].trim();
         Date date = Toolkit.chineseDateConvert(dateString);
 
-        return new Review(appId, reviewId, rate, title, reviewBody, date, version, userId);
+        return new Review(appId, reviewId, rate, date, version, userId);
+
+
     }
+
 
     //get all reviews from the current page
     public List<Review> getReviewsFromPage(String appId, Page page) {
         List<Review> reviewList = new ArrayList<>();
         Document document = page.getHtml().getDocument();
-
-        List<String> userIdList = page.getHtml().links().regex("userProfileId=[0-9]*").replace("userProfileId=", "").all();
-        List<String> reviewIdList = page.getHtml().regex("userReviewId=[0-9]*").replace("userReviewId=", "").all();
-
-        reviewIdList = Toolkit.removeDuplicate(reviewIdList);
+        Elements customerReviews = document.getElementsByClass("customer-review");
 
         try {
-            Elements titles = document.getElementsByClass("customerReviewTitle");
-            Elements reviews = document.getElementsByClass("content");
-            Elements users = document.getElementsByClass("user-info");
-
-            for (int i = 0; i < reviewIdList.size(); i++) {
-                reviewList.add(getReview(appId, reviewIdList.get(i), titles.get(i), reviews.get(i), users.get(i), userIdList.get(i)));
+            for (int i = 0; i < customerReviews.size(); i++) {
+                reviewList.add(getReview(appId, customerReviews.get(i)));
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -147,13 +154,6 @@ public class ReviewPageProcessor implements PageProcessor {
         return reviewList;
     }
 
-    public void consoleOutPut(Set<Review> reviewList) {
-
-        for (Review review : reviewList) {
-            System.out.printf("%-50s %-50s %-50s %tF", review.getAuthorId(), review.getRate(), review.getVersion(), review.getDate());
-            System.out.println();
-        }
-    }
 
     //output every review content
     public void consoleOutPut(List<Review> reviewList) {
@@ -174,6 +174,19 @@ public class ReviewPageProcessor implements PageProcessor {
         }
         return urlList;
 
+    }
+
+    //construct the review object
+    public Review getReview(String appId, String reviewId, Element titleElement, Element user, String userId) throws ParseException {
+
+        String rateString = titleElement.nextElementSibling().attr("aria-label"); //string that contains number of stars e.g. 1星
+        String userInfo = user.text(); // string contains nickname, version of the app and date that can be splitted by dash e.g. 评论人： 魅影伈 - 版本 6.3.13 - 2016年02月10日
+        double rate = Double.parseDouble(rateString.substring(0, 1));
+        String[] info = userInfo.split("-");
+        String version = info[info.length - 2].trim().split(" ")[1];
+        String dateString = info[info.length - 1].trim();
+        Date date = Toolkit.chineseDateConvert(dateString);
+        return new Review(appId, reviewId, rate, date, version, userId);
     }
 
 
