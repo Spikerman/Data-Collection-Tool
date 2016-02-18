@@ -48,7 +48,7 @@ public class ReviewPageProcessor implements PageProcessor {
 
         String sql = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
         DbHelper dbHelper = new DbHelper();
-        dbHelper.setPst(sql);
+        dbHelper.setInsertReviewPst(sql);
         ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("685872176");
         Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
@@ -59,12 +59,12 @@ public class ReviewPageProcessor implements PageProcessor {
         Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
         for (Review review : reviewSet) {
             try {
-                dbHelper.pst.setString(1, review.getId());
-                dbHelper.pst.setString(2, review.getAppId());
-                dbHelper.pst.setDouble(3, review.getRate());
-                dbHelper.pst.setString(4, review.getVersion());
-                dbHelper.pst.setDate(5, new java.sql.Date(review.getDate().getTime()));
-                dbHelper.pst.executeUpdate();
+                dbHelper.insertReviewPst.setString(1, review.getId());
+                dbHelper.insertReviewPst.setString(2, review.getAppId());
+                dbHelper.insertReviewPst.setDouble(3, review.getRate());
+                dbHelper.insertReviewPst.setString(4, review.getVersion());
+                dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
+                dbHelper.insertReviewPst.executeUpdate();
             } catch (Exception e) {
                 e.printStackTrace();
             }

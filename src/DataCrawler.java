@@ -10,6 +10,7 @@ public class DataCrawler {
     public static AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
     public static FloatUpRankPageProcessor floatUpRankPageProcessor = new FloatUpRankPageProcessor();
     public static AppInfoController appInfoController = new AppInfoController();
+    public static DbHelper dbHelper = new DbHelper();
 
     public static void main(String args[]) {
         Spider.create(appStorePaidRankProcessor)
@@ -39,11 +40,28 @@ public class DataCrawler {
 
         System.out.println("-----------------------");
         System.out.println("all app info list");
+        dbHelper.setInsertAppInfoPst(DbHelper.insertAppInfoSql);
         List<AppData> dataList = appInfoController.fetchAppInfo();
         for (AppData appData : dataList) {
             System.out.println(appData.ranking + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
                     + appData.userRatingCountForCurrentVersion);
+
+            try {
+                dbHelper.insertAppInfoPst.setString(1, appData.id);
+                dbHelper.insertAppInfoPst.setInt(2, appData.ranking);
+                dbHelper.insertAppInfoPst.setDouble(3, appData.averageUserRating);
+                dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRatingForCurrentVersion);
+                dbHelper.insertAppInfoPst.setDouble(5, appData.userRatingCount);
+                dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCountForCurrentVersion);
+                dbHelper.insertAppInfoPst.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
         }
+
+
     }
 
 

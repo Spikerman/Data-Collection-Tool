@@ -12,18 +12,16 @@ public class DbHelper {
     public static final String user = "root";
     public static final String password = "root";
 
-    public Connection connection = null;
-    public PreparedStatement pst = null;
+    public static final String insertReviewSql
+            = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
+    public static final String insertAppInfoSql
+            = "insert into AppInfo (id,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion) values(?,?,?,?,?,?)";
 
-    public DbHelper(String sql) {
-        try {
-            Class.forName(name);
-            connection = DriverManager.getConnection(url, user, password);
-            pst = connection.prepareStatement(sql);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    public Connection connection = null;
+    public PreparedStatement insertReviewPst = null;
+    public PreparedStatement insertAppInfoPst=null;
+
+
 
     public DbHelper() {
         try {
@@ -34,11 +32,12 @@ public class DbHelper {
         }
     }
 
+
     public static void main(String args[]) {
         String sql = "insert into Author values('123456','654321')";
-        DbHelper dbHelper = new DbHelper(sql);
+        DbHelper dbHelper = new DbHelper();
         try {
-            dbHelper.pst.executeUpdate();
+            dbHelper.insertReviewPst.executeUpdate();
             dbHelper.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -47,10 +46,18 @@ public class DbHelper {
 
     }
 
-    public void setPst(String sql) {
+    public void setInsertReviewPst(String sql) {
         try {
-            pst = connection.prepareStatement(sql);
+            insertReviewPst = connection.prepareStatement(sql);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setInsertAppInfoPst(String sql) {
+        try{
+            insertAppInfoPst=connection.prepareStatement(sql);
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
@@ -58,7 +65,7 @@ public class DbHelper {
     public void close() {
         try {
             this.connection.close();
-            this.pst.close();
+            this.insertReviewPst.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
