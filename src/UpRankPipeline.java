@@ -9,12 +9,24 @@ import java.util.List;
  */
 public class UpRankPipeline implements Pipeline {
 
+    AppInfoController appInfoController;
+
+    public UpRankPipeline(AppInfoController appInfoController) {
+        this.appInfoController = appInfoController;
+    }
+
+    public AppInfoController getAppInfoController() {
+        return appInfoController;
+    }
+
+    public void setAppInfoController(AppInfoController appInfoController) {
+        this.appInfoController = appInfoController;
+    }
+
     @Override
     public void process(ResultItems resultItems, Task task) {
 
         List appIdList = resultItems.get("upIdList");
-        AppInfoController appInfoController=new AppInfoController(appIdList);
-        appInfoController.fetchStart();
-
+        appInfoController.appendAppIdList(appIdList);
     }
 }

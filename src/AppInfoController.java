@@ -15,11 +15,10 @@ public class AppInfoController {
 
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
+    private List appIdList = new ArrayList<>();
+    public List<AppData> appDataList = new ArrayList<>();
 
-    private List appIdList;
-
-    public AppInfoController(List appIdList) {
-        this.appIdList = appIdList;
+    public AppInfoController() {
     }
 
     public List getAppIdList() {
@@ -31,8 +30,12 @@ public class AppInfoController {
     }
 
 
-    public void fetchStart() {
-        List<AppData> appDataList = new ArrayList<>();
+    public void appendAppIdList(List entryAppIdList) {
+        appIdList.addAll(entryAppIdList);
+    }
+
+    //acquire all app info according to app id, and return the app data list
+    public List<AppData> fetchAppInfo() {
         Iterator idIterator = appIdList.iterator();
 
         int x = 1;
@@ -42,7 +45,6 @@ public class AppInfoController {
             appData.ranking = x;
             appDataList.add(appData);
             x++;
-
         }
 
         List<List> subAppDataList = Toolkit.splitArray(appDataList, 100);
@@ -56,6 +58,15 @@ public class AppInfoController {
                 System.out.println("jsonObject=null, fetch error");
             }
         }
+
+        //清空只含有id的appDataList元素,并重新填充信息完整的元素
+        appDataList.clear();
+
+        for (List subList : subAppDataList) {
+            appDataList.addAll(subList);
+        }
+
+        return appDataList;
     }
 
     public JSONObject getJSON(List<AppData> appDataList) {
@@ -99,17 +110,23 @@ public class AppInfoController {
         return idListString;
     }
 
+    //补足appDataList的完整信息
     public void addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
         try {
             int index = 0;
             if (entryList.size() == (int) jsonObject.get("resultCount")) {
                 for (AppData appData : entryList) {
-                    appData.name = jsonObject.getJSONArray("results").getJSONObject(index).get("trackName").toString();
 
                     if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("averageUserRating"))
                         appData.averageUserRating = 0;
                     else
                         appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRating");
+
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("averageUserRatingForCurrentVersion"))
+                        appData.averageUserRatingForCurrentVersion = 0;
+                    else
+                        appData.averageUserRatingForCurrentVersion = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRatingForCurrentVersion");
+
 
                     if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("userRatingCount"))
                         appData.userRatingCount = 0;
@@ -122,8 +139,8 @@ public class AppInfoController {
                         appData.userRatingCountForCurrentVersion = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCountForCurrentVersion");
 
 
-                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount+"  "
-                    +appData.userRatingCountForCurrentVersion);
+//                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+//                            + appData.userRatingCountForCurrentVersion);
 
                     index++;
                 }

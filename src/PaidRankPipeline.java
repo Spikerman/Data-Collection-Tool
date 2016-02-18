@@ -11,13 +11,26 @@ import java.util.List;
 
 public class PaidRankPipeline implements Pipeline {
 
+    AppInfoController appInfoController;
+
+    public PaidRankPipeline(AppInfoController appInfoController) {
+        this.appInfoController = appInfoController;
+    }
+
+    public AppInfoController getAppInfoController() {
+        return appInfoController;
+    }
+
+    public void setAppInfoController(AppInfoController appInfoController) {
+        this.appInfoController = appInfoController;
+    }
 
     @Override
     public void process(ResultItems resultItems, Task task) {
 
         List appIdList = resultItems.get("paidIdList");
-        AppInfoController appInfoController=new AppInfoController(appIdList);
-        appInfoController.fetchStart();
+        appInfoController.appendAppIdList(appIdList);
 
     }
+
 }

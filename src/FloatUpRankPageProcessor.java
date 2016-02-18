@@ -10,7 +10,7 @@ import java.util.List;
 public class FloatUpRankPageProcessor implements PageProcessor {
 
     public static final String PAGE_URL = "http://aso100.com/index.php/rank/float?float=up";
-    private Site site = Site.me().setRetryTimes(3).setSleepTime(1000);
+    private Site site = Site.me().setRetryTimes(3).setSleepTime(1000).setTimeOut(200000);
 
     public FloatUpRankPageProcessor() {
         System.out.println("FloatUpRankPageProcessor Start!");
@@ -19,17 +19,8 @@ public class FloatUpRankPageProcessor implements PageProcessor {
     @Override
     public void process(Page page) {
 
-
         //get app id from the list
         List<String> appIdList = page.getHtml().links().regex("appid=[0-9]{8,11}&").replace("appid=", "").replace("&", "").all();
-        System.out.println("app id amount: " + appIdList.size());
-
-        int i=1;
-        for (String id : appIdList) {
-            System.out.println(i+"  "+id);
-            i++;
-        }
-
         page.putField("upIdList", appIdList);
 
     }
