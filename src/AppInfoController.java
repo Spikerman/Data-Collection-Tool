@@ -1,6 +1,8 @@
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,10 +17,16 @@ public class AppInfoController {
 
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
-    private List appIdList = new ArrayList<>();
+
     public List<AppData> appDataList = new ArrayList<>();
+    private List appIdList = new ArrayList<>();
+    private int retryTimes = 5;
 
     public AppInfoController() {
+    }
+
+    public void setRetryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
     }
 
     public List getAppIdList() {
@@ -34,7 +42,8 @@ public class AppInfoController {
         appIdList.addAll(entryAppIdList);
     }
 
-    //acquire all app info according to app id, and return the app data list
+    //acquire all app info according to app id, and return the app data list,
+    //return null if network error
     public List<AppData> fetchAppInfo() {
         Iterator idIterator = appIdList.iterator();
 
@@ -56,6 +65,7 @@ public class AppInfoController {
                 addAppDataInfo(dataList, jsonObject);
             } else {
                 System.out.println("jsonObject=null, fetch error");
+                return null;
             }
         }
 
@@ -71,33 +81,50 @@ public class AppInfoController {
 
     public JSONObject getJSON(List<AppData> appDataList) {
 
-        JSONObject jsonObject;
+        JSONObject jsonObject = null;
+        boolean success = false;
 
-        try {
+        int i = 0;
 
-            String idListString = idListStringFormation(appDataList);
-            URL url = new URL(String.format(ITUNES_SEARCH_API, idListString));
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuffer json = new StringBuffer(2048);
+        while (i < retryTimes) {
+            try {
 
-            String tmp;
+                String idListString = idListStringFormation(appDataList);
+                URL url = new URL(String.format(ITUNES_SEARCH_API, idListString));
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-            while ((tmp = reader.readLine()) != null) {
-                json.append(tmp).append("\n");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuffer json = new StringBuffer(2048);
+
+                String tmp;
+                while ((tmp = reader.readLine()) != null) {
+                    json.append(tmp).append("\n");
+                }
+
+                reader.close();
+                jsonObject = new JSONObject(json.toString());
+
+                if (0 == (int) jsonObject.get("resultCount")) {
+                    jsonObject = null;
+                } else {
+                    System.out.println("json object result count: " + (int) jsonObject.get("resultCount"));
+                }
+
+                success=true;
+                break;
+
+            } catch (IOException e) {
+                System.out.println("network error" + "retry "+i+1+" times");
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+            i++;
+        }
 
-            reader.close();
-            jsonObject = new JSONObject(json.toString());
-
-            if (0 == (int) jsonObject.get("resultCount")) {
-                jsonObject = null;
-            } else
-                System.out.println("json object result count: " + (int) jsonObject.get("resultCount"));
-        } catch (Exception e) {
-            System.out.println("network error");
-            System.out.println(e.getMessage());
-            jsonObject = null;
+        if(success){
+            System.out.println("connect success!");
+        }else{
+            System.out.println("connect fail!");
         }
         return jsonObject;
     }

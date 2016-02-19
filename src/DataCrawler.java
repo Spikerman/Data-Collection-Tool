@@ -37,32 +37,29 @@ public class DataCrawler {
             i++;
         }
 
-
         System.out.println("-----------------------");
         System.out.println("all app info list");
         dbHelper.setInsertAppInfoPst(DbHelper.insertAppInfoSql);
         List<AppData> dataList = appInfoController.fetchAppInfo();
-        for (AppData appData : dataList) {
-            System.out.println(appData.ranking + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
-                    + appData.userRatingCountForCurrentVersion);
+        if (dataList != null) {
+            for (AppData appData : dataList) {
 
-            try {
-                dbHelper.insertAppInfoPst.setString(1, appData.id);
-                dbHelper.insertAppInfoPst.setInt(2, appData.ranking);
-                dbHelper.insertAppInfoPst.setDouble(3, appData.averageUserRating);
-                dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRatingForCurrentVersion);
-                dbHelper.insertAppInfoPst.setDouble(5, appData.userRatingCount);
-                dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCountForCurrentVersion);
-                dbHelper.insertAppInfoPst.executeUpdate();
-            } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println(appData.ranking + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+                        + appData.userRatingCountForCurrentVersion);
+
+                try {
+                    dbHelper.insertAppInfoPst.setString(1, appData.id);
+                    dbHelper.insertAppInfoPst.setInt(2, appData.ranking);
+                    dbHelper.insertAppInfoPst.setDouble(3, appData.averageUserRating);
+                    dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRatingForCurrentVersion);
+                    dbHelper.insertAppInfoPst.setDouble(5, appData.userRatingCount);
+                    dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCountForCurrentVersion);
+                    dbHelper.insertAppInfoPst.executeUpdate();
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
             }
-
-
         }
-
-
     }
-
 
 }

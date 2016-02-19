@@ -69,7 +69,6 @@ public class ReviewPageProcessor implements PageProcessor {
                 e.printStackTrace();
             }
         }
-
     }
 
     public Set<Review> getReviewSet() {
