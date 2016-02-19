@@ -12,7 +12,7 @@ import java.util.List;
 public class AppStorePaidRankProcessor implements PageProcessor {
 
     public static final String PAGE_URL ="http://www.apple.com/cn/itunes/charts/paid-apps/";
-    private Site site = Site.me().setRetryTimes(3).setSleepTime(1000).setTimeOut(20000);
+    private Site site = Site.me().setRetryTimes(3).setCycleRetryTimes(3).setSleepTime(1000).setTimeOut(20000);
 
     public AppStorePaidRankProcessor() {
         System.out.println("AppStorePaidRankProcessor Start!");

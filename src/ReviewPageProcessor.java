@@ -24,15 +24,15 @@ public class ReviewPageProcessor implements PageProcessor {
     public static List<String> pageUrls;
     private static int pageCount;
     private static Elements pageNumbers;
-    public boolean isFirstPage = true;
-
-    //in order to keep thread-safe
+    private boolean isFirstPage = true;
+    private List<String> appIdList;
+    //keep thread-safe
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
 
     private Pattern userIdPattern = Pattern.compile("\\d+");
     private Pattern reviewIdPattern = Pattern.compile("\\d+");
 
-    private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(100).setTimeOut(200000)
+    private Site site = Site.me().setCycleRetryTimes(5).setRetryTimes(5).setSleepTime(100).setTimeOut(200000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.3.2 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/533.21.1")
             .addHeader("X-Apple-Store-Front", "143465,12")
@@ -42,6 +42,10 @@ public class ReviewPageProcessor implements PageProcessor {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
         System.out.println("ReviewPageProcessor Start!");
+    }
+
+    public ReviewPageProcessor(List<String> appIdList){
+        this.appIdList=appIdList;
     }
 
     public static void main(String args[]) {
@@ -88,9 +92,7 @@ public class ReviewPageProcessor implements PageProcessor {
                 page.addTargetRequests(pageUrls);
             }
             List reviewList = getReviewsFromPage(id, page);
-
             consoleOutPut(reviewList);
-
             reviewSet.addAll(reviewList);
 
             System.out.println("-------------------------------------------------------");
@@ -118,7 +120,6 @@ public class ReviewPageProcessor implements PageProcessor {
         Matcher userIdMatcher = userIdPattern.matcher(userIdString);
         userIdMatcher.find();
         String userId = userIdMatcher.group();
-
 
         Matcher reviewIdMatcher = reviewIdPattern.matcher(reviewIdString);
         reviewIdMatcher.find();

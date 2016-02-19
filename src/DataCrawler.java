@@ -1,6 +1,8 @@
 import us.codecraft.webmagic.Spider;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Created by chenhao on 2/18/16.
@@ -9,6 +11,7 @@ public class DataCrawler {
 
     public static AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
     public static FloatUpRankPageProcessor floatUpRankPageProcessor = new FloatUpRankPageProcessor();
+    public static ReviewPageProcessor reviewPageProcessor;
     public static AppInfoController appInfoController = new AppInfoController();
     public static DbHelper dbHelper = new DbHelper();
 
@@ -43,10 +46,8 @@ public class DataCrawler {
         List<AppData> dataList = appInfoController.fetchAppInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
-
                 System.out.println(appData.ranking + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
                         + appData.userRatingCountForCurrentVersion);
-
                 try {
                     dbHelper.insertAppInfoPst.setString(1, appData.id);
                     dbHelper.insertAppInfoPst.setInt(2, appData.ranking);
@@ -56,10 +57,35 @@ public class DataCrawler {
                     dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCountForCurrentVersion);
                     dbHelper.insertAppInfoPst.executeUpdate();
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         }
+
+        for(Object id:appIdList) {
+            reviewPageProcessor=new ReviewPageProcessor(id.toString());
+            Spider.create(reviewPageProcessor)
+                    .addUrl(ReviewPageProcessor.INITIAL_URL)
+                    .thread(20)
+                    .run();
+
+            dbHelper.setInsertReviewPst(DbHelper.insertReviewSql);
+
+            Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
+            for (Review review : reviewSet) {
+                try {
+                    dbHelper.insertReviewPst.setString(1, review.getId());
+                    dbHelper.insertReviewPst.setString(2, review.getAppId());
+                    dbHelper.insertReviewPst.setDouble(3, review.getRate());
+                    dbHelper.insertReviewPst.setString(4, review.getVersion());
+                    dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
+                    dbHelper.insertReviewPst.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
 }
