@@ -2,7 +2,6 @@ import us.codecraft.webmagic.Spider;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Created by chenhao on 2/18/16.
@@ -12,6 +11,7 @@ public class DataCrawler {
     public static AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
     public static FloatUpRankPageProcessor floatUpRankPageProcessor = new FloatUpRankPageProcessor();
     public static ReviewPageProcessor reviewPageProcessor;
+    public static ProxyProcessor proxyProcessor = new ProxyProcessor();
     public static AppInfoController appInfoController = new AppInfoController();
     public static DbHelper dbHelper = new DbHelper();
 
@@ -62,11 +62,20 @@ public class DataCrawler {
             }
         }
 
-        for(Object id:appIdList) {
-            reviewPageProcessor=new ReviewPageProcessor(id.toString());
+
+        proxyProcessor.setScrapePageCount(10);
+        Spider.create(proxyProcessor)
+                .addUrl(proxyProcessor.INITIAL_URL)
+                .thread(1)
+                .run();
+
+
+        for (Object id : appIdList) {
+            reviewPageProcessor = new ReviewPageProcessor(id.toString());
+            reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)
-                    .thread(20)
+                    .thread(5)
                     .run();
 
             dbHelper.setInsertReviewPst(DbHelper.insertReviewSql);

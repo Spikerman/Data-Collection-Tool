@@ -1,3 +1,4 @@
+import org.apache.http.HttpHost;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,32 +21,39 @@ public class ReviewPageProcessor implements PageProcessor {
     public static final String APP_STORE_REVIEW_URL
             = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=%s&page=%d&sort=4";
     public static String INITIAL_URL;
-    public static String id;
     public static List<String> pageUrls;
+    private static String id;
     private static int pageCount;
     private static Elements pageNumbers;
-    private boolean isFirstPage = true;
-    private List<String> appIdList;
     //keep thread-safe
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
-
-    private Pattern userIdPattern = Pattern.compile("\\d+");
-    private Pattern reviewIdPattern = Pattern.compile("\\d+");
-
-    private Site site = Site.me().setCycleRetryTimes(5).setRetryTimes(5).setSleepTime(100).setTimeOut(200000)
+    public Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2000).setTimeOut(200000)
             .setCharset("utf-8")
-            .setUserAgent("iTunes/12.3.2 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/533.21.1")
+            .setUserAgent("iTunes/12.2.1 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/601.4.4")
             .addHeader("X-Apple-Store-Front", "143465,12")
             .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
-
+    private List<Proxy> proxyList;
+    private boolean isFirstPage = true;
+    private Proxy proxy = null;
+    private List<String> appIdList;
+    private Pattern userIdPattern = Pattern.compile("\\d+");
+    private Pattern reviewIdPattern = Pattern.compile("\\d+");
     public ReviewPageProcessor(String entryId) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
         System.out.println("ReviewPageProcessor Start!");
     }
 
-    public ReviewPageProcessor(List<String> appIdList){
-        this.appIdList=appIdList;
+    public ReviewPageProcessor(String entryId, Proxy proxy) {
+        INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
+        id = entryId;
+        this.proxy = proxy;
+        HttpHost httpHost;
+        System.out.println("ReviewPageProcessor Start!");
+    }
+
+    public ReviewPageProcessor(List<String> appIdList) {
+        this.appIdList = appIdList;
     }
 
     public static void main(String args[]) {
@@ -73,6 +81,14 @@ public class ReviewPageProcessor implements PageProcessor {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
+    }
+
+    public void setProxyList(List<Proxy> proxyList) {
+        this.proxyList = proxyList;
     }
 
     public Set<Review> getReviewSet() {
