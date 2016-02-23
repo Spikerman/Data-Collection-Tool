@@ -48,7 +48,6 @@ public class ReviewPageProcessor implements PageProcessor {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
         this.proxy = proxy;
-        HttpHost httpHost;
         System.out.println("ReviewPageProcessor Start!");
     }
 

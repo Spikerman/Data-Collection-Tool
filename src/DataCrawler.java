@@ -1,5 +1,6 @@
 import us.codecraft.webmagic.Spider;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
@@ -16,48 +17,39 @@ public class DataCrawler {
     public static DbHelper dbHelper = new DbHelper();
 
     public static void main(String args[]) {
+
         Spider.create(appStorePaidRankProcessor)
                 .addUrl(AppStorePaidRankProcessor.PAGE_URL)
-                .addPipeline(new PaidRankPipeline(appInfoController))
+                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
                 .thread(1)
                 .run();
 
         Spider.create(floatUpRankPageProcessor)
                 .addUrl(FloatUpRankPageProcessor.PAGE_URL)
-                .addPipeline(new UpRankPipeline(appInfoController))
+                .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .run();
 
-        List appIdList = appInfoController.getAppIdList();
-        appIdList = Toolkit.removeDuplicate(appIdList);
 
-        System.out.println("-----------------------");
-        System.out.println("all id list");
-
-        int i = 1;
-        for (Object id : appIdList) {
-            System.out.println(i + " " + id.toString());
-            i++;
-        }
-
-        System.out.println("-----------------------");
-        System.out.println("all app info list");
         dbHelper.setInsertAppInfoPst(DbHelper.insertAppInfoSql);
+
         List<AppData> dataList = appInfoController.fetchAppInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
-                System.out.println(appData.ranking + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
-                        + appData.userRatingCountForCurrentVersion);
+                System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+                        + appData.userRatingCountForCurrentVersion + "  " + appData.getScrapeTime());
                 try {
-                    dbHelper.insertAppInfoPst.setString(1, appData.id);
-                    dbHelper.insertAppInfoPst.setInt(2, appData.ranking);
-                    dbHelper.insertAppInfoPst.setDouble(3, appData.averageUserRating);
-                    dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRatingForCurrentVersion);
-                    dbHelper.insertAppInfoPst.setDouble(5, appData.userRatingCount);
-                    dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCountForCurrentVersion);
+                    dbHelper.insertAppInfoPst.setString(1, appData.getId());
+                    dbHelper.insertAppInfoPst.setString(2, appData.getRankType());
+                    dbHelper.insertAppInfoPst.setInt(3, appData.ranking);
+                    dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRating);
+                    dbHelper.insertAppInfoPst.setDouble(5, appData.averageUserRatingForCurrentVersion);
+                    dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCount);
+                    dbHelper.insertAppInfoPst.setDouble(7, appData.userRatingCountForCurrentVersion);
+                    dbHelper.insertAppInfoPst.setDate(8, new java.sql.Date(appData.getScrapeTime().getTime()));
                     dbHelper.insertAppInfoPst.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (SQLException e) {
+                    System.out.println("duplicate app, skip it");
                 }
             }
         }
@@ -70,6 +62,8 @@ public class DataCrawler {
                 .run();
 
 
+        List appIdList = appInfoController.getAppIdList();
+        appIdList = Toolkit.removeDuplicate(appIdList);
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
             reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());

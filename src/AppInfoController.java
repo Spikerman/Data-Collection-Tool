@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -42,19 +41,13 @@ public class AppInfoController {
         appIdList.addAll(entryAppIdList);
     }
 
+    public void appendAppDataList(List entryAppDataList) {
+        appDataList.addAll(entryAppDataList);
+    }
+
     //acquire all app info according to app id, and return the app data list,
     //return null if network error
     public List<AppData> fetchAppInfo() {
-        Iterator idIterator = appIdList.iterator();
-
-        int x = 1;
-        while (idIterator.hasNext()) {
-            String id = idIterator.next().toString();
-            AppData appData = new AppData(id);
-            appData.ranking = x;
-            appDataList.add(appData);
-            x++;
-        }
 
         List<List> subAppDataList = Toolkit.splitArray(appDataList, 100);
 
@@ -110,20 +103,20 @@ public class AppInfoController {
                     System.out.println("json object result count: " + (int) jsonObject.get("resultCount"));
                 }
 
-                success=true;
+                success = true;
                 break;
 
             } catch (IOException e) {
-                System.out.println("network error" + "retry "+i+1+" times");
+                System.out.println("network error" + "retry " + i + 1 + " times");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             i++;
         }
 
-        if(success){
+        if (success) {
             System.out.println("connect success!");
-        }else{
+        } else {
             System.out.println("connect fail!");
         }
         return jsonObject;

@@ -15,12 +15,11 @@ public class DbHelper {
     public static final String insertReviewSql
             = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
     public static final String insertAppInfoSql
-            = "insert into AppInfo (id,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion) values(?,?,?,?,?,?)";
+            = "insert into AppInfo (appId,rankType,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion,date) values(?,?,?,?,?,?,?,?)";
 
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
-    public PreparedStatement insertAppInfoPst=null;
-
+    public PreparedStatement insertAppInfoPst = null;
 
 
     public DbHelper() {
@@ -55,9 +54,9 @@ public class DbHelper {
     }
 
     public void setInsertAppInfoPst(String sql) {
-        try{
-            insertAppInfoPst=connection.prepareStatement(sql);
-        }catch(Exception e){
+        try {
+            insertAppInfoPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
