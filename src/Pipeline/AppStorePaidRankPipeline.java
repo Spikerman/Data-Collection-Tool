@@ -1,3 +1,7 @@
+package Pipeline;
+
+import BasicData.AppData;
+import Controller.AppInfoController;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;

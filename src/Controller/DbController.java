@@ -1,3 +1,5 @@
+package Controller;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -6,23 +8,26 @@ import java.sql.SQLException;
 /**
  * Created by chenhao on 2/15/16.
  */
-public class DbHelper {
+public class DbController {
     public static final String url = "jdbc:mysql://127.0.0.1/Data";
     public static final String name = "com.mysql.jdbc.Driver";
     public static final String user = "root";
     public static final String password = "root";
 
     public static final String insertReviewSql
-            = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
+            = "insert into Review (id,userId,rate,version,date) values(?,?,?,?,?)";
     public static final String insertAppInfoSql
             = "insert into AppInfo (appId,rankType,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion,date) values(?,?,?,?,?,?,?,?)";
+
+    public static final String insertAuthorSql
+            = "insert into Author (userId,appId) values(?,?)";
 
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
     public PreparedStatement insertAppInfoPst = null;
+    public PreparedStatement insertAuthorPst = null;
 
-
-    public DbHelper() {
+    public DbController() {
         try {
             Class.forName(name);
             connection = DriverManager.getConnection(url, user, password);
@@ -31,18 +36,23 @@ public class DbHelper {
         }
     }
 
-
     public static void main(String args[]) {
         String sql = "insert into Author values('123456','654321')";
-        DbHelper dbHelper = new DbHelper();
+        DbController dbController = new DbController();
         try {
-            dbHelper.insertReviewPst.executeUpdate();
-            dbHelper.close();
+            dbController.insertReviewPst.executeUpdate();
+            dbController.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-
+    public void setInsertAuthorPst(String sql) {
+        try {
+            insertAuthorPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setInsertReviewPst(String sql) {

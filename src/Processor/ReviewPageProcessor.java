@@ -1,4 +1,10 @@
-import org.apache.http.HttpHost;
+package Processor;
+
+import BasicData.Proxy;
+import BasicData.Review;
+import Controller.DbController;
+import Pipeline.ReviewPagePipeline;
+import Utils.Toolkit;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -41,14 +47,14 @@ public class ReviewPageProcessor implements PageProcessor {
     public ReviewPageProcessor(String entryId) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
-        System.out.println("ReviewPageProcessor Start!");
+        System.out.println("Processor.ReviewPageProcessor Start!");
     }
 
     public ReviewPageProcessor(String entryId, Proxy proxy) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
         this.proxy = proxy;
-        System.out.println("ReviewPageProcessor Start!");
+        System.out.println("Processor.ReviewPageProcessor Start!");
     }
 
     public ReviewPageProcessor(List<String> appIdList) {
@@ -57,8 +63,8 @@ public class ReviewPageProcessor implements PageProcessor {
 
     public static void main(String args[]) {
 
-        String sql = "insert into Review (id,appId,rate,version,date) values(?,?,?,?,?)";
-        DbHelper dbHelper = new DbHelper();
+        String sql = "insert into BasicData.Review (id,appId,rate,version,date) values(?,?,?,?,?)";
+        DbController dbHelper = new DbController();
         dbHelper.setInsertReviewPst(sql);
         ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("685872176");
         Spider.create(reviewPageProcessor)

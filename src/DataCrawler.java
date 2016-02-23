@@ -1,8 +1,20 @@
+import BasicData.AppData;
+import BasicData.Review;
+import Controller.AppInfoController;
+import Controller.DbController;
+import Pipeline.AppStorePaidRankPipeline;
+import Pipeline.FloatUpRankPipeline;
+import Processor.AppStorePaidRankProcessor;
+import Processor.FloatUpRankPageProcessor;
+import Processor.ProxyProcessor;
+import Processor.ReviewPageProcessor;
+import Utils.Toolkit;
 import us.codecraft.webmagic.Spider;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
+
 
 /**
  * Created by chenhao on 2/18/16.
@@ -14,7 +26,7 @@ public class DataCrawler {
     public static ReviewPageProcessor reviewPageProcessor;
     public static ProxyProcessor proxyProcessor = new ProxyProcessor();
     public static AppInfoController appInfoController = new AppInfoController();
-    public static DbHelper dbHelper = new DbHelper();
+    public static DbController dbController = new DbController();
 
     public static void main(String args[]) {
 
@@ -31,7 +43,7 @@ public class DataCrawler {
                 .run();
 
 
-        dbHelper.setInsertAppInfoPst(DbHelper.insertAppInfoSql);
+        dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
 
         List<AppData> dataList = appInfoController.fetchAppInfo();
         if (dataList != null) {
@@ -39,15 +51,15 @@ public class DataCrawler {
                 System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
                         + appData.userRatingCountForCurrentVersion + "  " + appData.getScrapeTime());
                 try {
-                    dbHelper.insertAppInfoPst.setString(1, appData.getId());
-                    dbHelper.insertAppInfoPst.setString(2, appData.getRankType());
-                    dbHelper.insertAppInfoPst.setInt(3, appData.ranking);
-                    dbHelper.insertAppInfoPst.setDouble(4, appData.averageUserRating);
-                    dbHelper.insertAppInfoPst.setDouble(5, appData.averageUserRatingForCurrentVersion);
-                    dbHelper.insertAppInfoPst.setDouble(6, appData.userRatingCount);
-                    dbHelper.insertAppInfoPst.setDouble(7, appData.userRatingCountForCurrentVersion);
-                    dbHelper.insertAppInfoPst.setDate(8, new java.sql.Date(appData.getScrapeTime().getTime()));
-                    dbHelper.insertAppInfoPst.executeUpdate();
+                    dbController.insertAppInfoPst.setString(1, appData.getId());
+                    dbController.insertAppInfoPst.setString(2, appData.getRankType());
+                    dbController.insertAppInfoPst.setInt(3, appData.ranking);
+                    dbController.insertAppInfoPst.setDouble(4, appData.averageUserRating);
+                    dbController.insertAppInfoPst.setDouble(5, appData.averageUserRatingForCurrentVersion);
+                    dbController.insertAppInfoPst.setDouble(6, appData.userRatingCount);
+                    dbController.insertAppInfoPst.setDouble(7, appData.userRatingCountForCurrentVersion);
+                    dbController.insertAppInfoPst.setDate(8, new java.sql.Date(appData.getScrapeTime().getTime()));
+                    dbController.insertAppInfoPst.executeUpdate();
                 } catch (SQLException e) {
                     System.out.println("duplicate app, skip it");
                 }
@@ -58,12 +70,13 @@ public class DataCrawler {
         proxyProcessor.setScrapePageCount(10);
         Spider.create(proxyProcessor)
                 .addUrl(proxyProcessor.INITIAL_URL)
-                .thread(1)
+                .thread(3)
                 .run();
 
 
         List appIdList = appInfoController.getAppIdList();
         appIdList = Toolkit.removeDuplicate(appIdList);
+
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
             reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());
@@ -72,19 +85,25 @@ public class DataCrawler {
                     .thread(5)
                     .run();
 
-            dbHelper.setInsertReviewPst(DbHelper.insertReviewSql);
+            dbController.setInsertReviewPst(DbController.insertReviewSql);
+            dbController.setInsertAuthorPst(DbController.insertAuthorSql);
 
             Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
             for (Review review : reviewSet) {
                 try {
-                    dbHelper.insertReviewPst.setString(1, review.getId());
-                    dbHelper.insertReviewPst.setString(2, review.getAppId());
-                    dbHelper.insertReviewPst.setDouble(3, review.getRate());
-                    dbHelper.insertReviewPst.setString(4, review.getVersion());
-                    dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
-                    dbHelper.insertReviewPst.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    dbController.insertReviewPst.setString(1, review.getId());
+                    dbController.insertReviewPst.setString(2, review.getAuthorId());
+                    dbController.insertReviewPst.setDouble(3, review.getRate());
+                    dbController.insertReviewPst.setString(4, review.getVersion());
+                    dbController.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
+                    dbController.insertReviewPst.executeUpdate();
+
+                    dbController.insertAuthorPst.setString(1, review.getAuthorId());
+                    dbController.insertAuthorPst.setString(2, review.getAuthorId());
+                    dbController.insertAuthorPst.executeLargeUpdate();
+
+                } catch (SQLException e) {
+                    System.out.println("duplicate one, skip it");
                 }
             }
         }
