@@ -27,23 +27,24 @@ public class ReviewPageProcessor implements PageProcessor {
     public static final String APP_STORE_REVIEW_URL
             = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=%s&page=%d&sort=4";
     public static String INITIAL_URL;
-    public static List<String> pageUrls;
-    private static String id;
-    private static int pageCount;
-    private static Elements pageNumbers;
+    public List<String> pageUrls;
     //keep thread-safe
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
-    public Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2000).setTimeOut(200000)
+    public Site site = Site.me().setCycleRetryTimes(5).setSleepTime(1500).setTimeOut(150000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.2.1 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/601.4.4")
             .addHeader("X-Apple-Store-Front", "143465,12")
             .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
+    private String id;
+    private int pageCount;
+    private Elements pageNumbers;
     private List<Proxy> proxyList;
     private boolean isFirstPage = true;
     private Proxy proxy = null;
     private List<String> appIdList;
     private Pattern userIdPattern = Pattern.compile("\\d+");
     private Pattern reviewIdPattern = Pattern.compile("\\d+");
+
     public ReviewPageProcessor(String entryId) {
         INITIAL_URL = String.format(APP_STORE_REVIEW_URL, entryId, 1);
         id = entryId;
@@ -70,7 +71,7 @@ public class ReviewPageProcessor implements PageProcessor {
         Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
                 .addPipeline(new ReviewPagePipeline())
-                .thread(20)
+                .thread(10)
                 .run();
 
         Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
@@ -83,7 +84,7 @@ public class ReviewPageProcessor implements PageProcessor {
                 dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
                 dbHelper.insertReviewPst.executeUpdate();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }

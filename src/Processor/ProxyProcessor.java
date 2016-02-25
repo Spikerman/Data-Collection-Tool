@@ -1,6 +1,8 @@
 package Processor;
 
 import BasicData.Proxy;
+import Downloader.DataDownloader;
+import org.apache.http.HttpHost;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,7 +21,8 @@ public class ProxyProcessor implements PageProcessor {
     public static final String PROXY_URL = "http://www.kuaidaili.com/free/inha/%d/";
     public String INITIAL_URL;
     private List<Proxy> proxyList = new ArrayList<>();
-    private Site site = Site.me().setCycleRetryTimes(5).setRetryTimes(3).setSleepTime(2000).setTimeOut(200000);
+
+    private Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2000).setTimeOut(200000);
     private int scrapePageCount = 5;
 
     public ProxyProcessor() {
@@ -33,6 +36,7 @@ public class ProxyProcessor implements PageProcessor {
         Spider.create(proxyProcessor)
                 .addUrl(proxyProcessor.INITIAL_URL)
                 .thread(5)
+                .setDownloader(new DataDownloader())
                 .run();
 
 
