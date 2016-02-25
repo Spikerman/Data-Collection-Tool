@@ -194,16 +194,16 @@ public class DataCrawler {
                     insertReview(review, dbController);
                 } catch (SQLException e) {
                     System.out.println("duplicate one, skip it");
-                } finally {
-                    try {
-                        insertAuthor(review, dbController);
-                    } catch (SQLException e) {
-                        System.out.println("duplicate one, skip it");
-                    }
+                }
+                try {
+                    insertAuthor(review, dbController);
+                } catch (SQLException e) {
+                    System.out.println("duplicate one, skip it");
                 }
 
             }
         }
-    }
 
+        dbController.close();
+    }
 }

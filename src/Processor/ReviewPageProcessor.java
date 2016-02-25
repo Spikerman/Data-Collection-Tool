@@ -3,8 +3,10 @@ package Processor;
 import BasicData.Proxy;
 import BasicData.Review;
 import Controller.DbController;
+import Downloader.DataDownloader;
 import Pipeline.ReviewPagePipeline;
 import Utils.Toolkit;
+import org.apache.http.HttpHost;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,12 +31,14 @@ public class ReviewPageProcessor implements PageProcessor {
     public static String INITIAL_URL;
     public List<String> pageUrls;
     //keep thread-safe
+    HttpHost httpHost=new HttpHost("211.144.81.68",18001,"HTTP");
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
-    public Site site = Site.me().setCycleRetryTimes(5).setSleepTime(1500).setTimeOut(150000)
+    public Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2500).setTimeOut(150000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.2.1 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/601.4.4")
             .addHeader("X-Apple-Store-Front", "143465,12")
-            .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
+            .addHeader("Accept-Language", "en-us, en, zh; q=0.50")
+            .setHttpProxy(httpHost);
     private String id;
     private int pageCount;
     private Elements pageNumbers;
@@ -72,6 +76,7 @@ public class ReviewPageProcessor implements PageProcessor {
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
                 .addPipeline(new ReviewPagePipeline())
                 .thread(10)
+                .setDownloader(new DataDownloader())
                 .run();
 
         Set<Review> reviewSet = reviewPageProcessor.getReviewSet();

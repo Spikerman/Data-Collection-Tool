@@ -21,8 +21,9 @@ public class ProxyProcessor implements PageProcessor {
     public static final String PROXY_URL = "http://www.kuaidaili.com/free/inha/%d/";
     public String INITIAL_URL;
     private List<Proxy> proxyList = new ArrayList<>();
+    HttpHost httpHost=new HttpHost("211.144.81.68",18001,"HTTP");
 
-    private Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2000).setTimeOut(200000);
+    private Site site = Site.me().setCycleRetryTimes(5).setSleepTime(2000).setTimeOut(200000).setHttpProxy(httpHost);
     private int scrapePageCount = 5;
 
     public ProxyProcessor() {

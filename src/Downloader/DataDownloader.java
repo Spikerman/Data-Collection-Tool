@@ -2,6 +2,7 @@ package Downloader;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.CookieSpecs;
@@ -34,6 +35,15 @@ public class DataDownloader extends AbstractDownloader {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
     private List<String> failUrl = new LinkedList<>();
+    private int proxyChangeCount = 5;
+    private String proxyIp[] = {
+            "121.31.197.130",
+            "localhost"
+    };
+    private int proxyPort[] = {
+            8123,
+            0
+    };
 
     public List<String> getFailUrls() {
         return failUrl;
@@ -76,8 +86,14 @@ public class DataDownloader extends AbstractDownloader {
         logger.info("downloading page {}", request.getUrl());
         CloseableHttpResponse httpResponse = null;
         try {
+            int i = 0;
+            HttpHost httpHost = getHttpHost();
+            if (httpHost != null) {
+                site.setHttpProxy(httpHost);
+            }
             HttpUriRequest httpUriRequest = getHttpUriRequest(request, site, headers);
-            httpResponse = getHttpClient(site).execute(httpUriRequest);
+            CloseableHttpClient httpClient = getHttpClient(site);
+            httpResponse = httpClient.execute(httpUriRequest);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (statusAccept(acceptStatCode, statusCode)) {
                 //charset
@@ -90,12 +106,17 @@ public class DataDownloader extends AbstractDownloader {
                 return page;
             } else {
                 logger.warn("code error " + statusCode + "\t" + request.getUrl());
-                logger.info(request.getUrl() + " has been added to the failUrlList");
-                failUrl.add(request.getUrl());
-
-                logger.info("add to cycle retry");
-                return addToCycleRetry(request, site);
+                if (statusCode == 403) {
+                    System.out.println("permission denied,change host");
+                    return addToCycleRetry(request, site);
+                } else {
+                    logger.info(request.getUrl() + " has been added to the failUrlList");
+                    failUrl.add(request.getUrl());
+                    logger.info("add to cycle retry");
+                    return addToCycleRetry(request, site);
+                }
             }
+
         } catch (IOException e) {
             logger.warn("download page " + request.getUrl() + " error", e);
             if (site.getCycleRetryTimes() > 0) {
@@ -175,5 +196,16 @@ public class DataDownloader extends AbstractDownloader {
         page.setRequest(request);
         page.setStatusCode(httpResponse.getStatusLine().getStatusCode());
         return page;
+    }
+
+    protected HttpHost getHttpHost() {
+        int size = proxyIp.length;
+        Random x=new Random();
+        int index = x.nextInt(2);
+        System.out.println("Use proxy" + " ip: " + proxyIp[index] + " port: " + proxyPort[index]);
+        if (proxyPort[index] == 0)
+            return null;
+        else
+            return new HttpHost(proxyIp[index], proxyPort[index], "Http");
     }
 }
