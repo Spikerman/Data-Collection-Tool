@@ -37,11 +37,9 @@ public class DataDownloader extends AbstractDownloader {
     private List<String> failUrl = new LinkedList<>();
     private int proxyChangeCount = 5;
     private String proxyIp[] = {
-            "121.31.197.130",
             "localhost"
     };
     private int proxyPort[] = {
-            8123,
             0
     };
 
@@ -201,7 +199,7 @@ public class DataDownloader extends AbstractDownloader {
     protected HttpHost getHttpHost() {
         int size = proxyIp.length;
         Random x=new Random();
-        int index = x.nextInt(2);
+        int index = x.nextInt(size);
         System.out.println("Use proxy" + " ip: " + proxyIp[index] + " port: " + proxyPort[index]);
         if (proxyPort[index] == 0)
             return null;

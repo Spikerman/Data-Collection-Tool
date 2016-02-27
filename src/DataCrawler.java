@@ -32,6 +32,7 @@ public class DataCrawler {
     public static DataDownloader dataDownloader = new DataDownloader();
     public static List<String> failUrlList = new LinkedList<>();
 
+
     public static void main(String args[]) {
 
         Spider.create(appStorePaidRankProcessor)
@@ -101,9 +102,10 @@ public class DataCrawler {
     public static void insertReview(Review review, DbController dbController) throws SQLException {
         dbController.insertReviewPst.setString(1, review.getId());
         dbController.insertReviewPst.setString(2, review.getAuthorId());
-        dbController.insertReviewPst.setDouble(3, review.getRate());
-        dbController.insertReviewPst.setString(4, review.getVersion());
-        dbController.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
+        dbController.insertReviewPst.setString(3, review.getAppId());
+        dbController.insertReviewPst.setDouble(4, review.getRate());
+        dbController.insertReviewPst.setString(5, review.getVersion());
+        dbController.insertReviewPst.setDate(6, new java.sql.Date(review.getDate().getTime()));
         dbController.insertReviewPst.executeUpdate();
 
 
@@ -130,12 +132,12 @@ public class DataCrawler {
     }
 
     public void fetchAllAppId() {
-        Spider.create(appStorePaidRankProcessor)
-                .addUrl(AppStorePaidRankProcessor.PAGE_URL)
-                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
-                .thread(1)
-                .setDownloader(dataDownloader)
-                .run();
+//        Spider.create(appStorePaidRankProcessor)
+//                .addUrl(AppStorePaidRankProcessor.PAGE_URL)
+//                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
+//                .thread(1)
+//                .setDownloader(dataDownloader)
+//                .run();
 
         Spider.create(floatUpRankPageProcessor)
                 .addUrl(FloatUpRankPageProcessor.PAGE_URL)
@@ -181,7 +183,7 @@ public class DataCrawler {
 
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)
-                    .thread(10)
+                    .thread(5)
                     .setDownloader(dataDownloader)
                     .run();
 

@@ -15,7 +15,7 @@ public class DbController {
     public static final String password = "root";
 
     public static final String insertReviewSql
-            = "insert into Review (id,userId,rate,version,date) values(?,?,?,?,?)";
+            = "insert into Review (id,userId,appId,rate,version,date) values(?,?,?,?,?,?)";
     public static final String insertAppInfoSql
             = "insert into AppInfo (appId,rankType,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion,date) values(?,?,?,?,?,?,?,?)";
 

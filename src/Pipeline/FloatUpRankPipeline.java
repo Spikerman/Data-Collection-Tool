@@ -32,10 +32,11 @@ public class FloatUpRankPipeline implements Pipeline {
     public void process(ResultItems resultItems, Task task) {
 
         List appIdList = resultItems.get("upIdList");
+        int size = resultItems.get("size");
         List<AppData> appDataList = new LinkedList<>();
-        int i = 1;
-        for (Object appId : appIdList) {
-            appDataList.add(new AppData(appId.toString(), i++, AppData.topFlowUp));
+
+        for (int i = 0; i < size; i++) {
+            appDataList.add(new AppData(appIdList.get(i).toString(), i + 1, AppData.topFlowUp));
         }
         appInfoController.appendAppIdList(appIdList);
         appInfoController.appendAppDataList(appDataList);

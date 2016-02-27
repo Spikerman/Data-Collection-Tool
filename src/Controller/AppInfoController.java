@@ -21,11 +21,15 @@ public class AppInfoController {
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
 
-    public List<AppData> appDataList = new ArrayList<>();
+    private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
     private int retryTimes = 5;
 
     public AppInfoController() {
+    }
+
+    public List<AppData> getAppDataList() {
+        return appDataList;
     }
 
     public void setRetryTimes(int retryTimes) {
