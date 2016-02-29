@@ -43,7 +43,7 @@ public class DataCrawler {
                 .run();
 
         Spider.create(floatUpRankPageProcessor)
-                .addUrl(FloatUpRankPageProcessor.PAGE_URL)
+                .addUrl(FloatUpRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
@@ -133,14 +133,14 @@ public class DataCrawler {
 
     public void fetchAllAppId() {
 //        Spider.create(appStorePaidRankProcessor)
-//                .addUrl(AppStorePaidRankProcessor.PAGE_URL)
+//                .addUrl(AppStorePaidRankProcessor.FLOW_UP_FREE_URL)
 //                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
 //                .thread(1)
 //                .setDownloader(dataDownloader)
 //                .run();
 
         Spider.create(floatUpRankPageProcessor)
-                .addUrl(FloatUpRankPageProcessor.PAGE_URL)
+                .addUrl(FloatUpRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)

@@ -6,12 +6,17 @@ import java.util.Date;
  * Created by chenhao on 2/5/16.
  */
 public class AppData {
-    public static final String topfree = "topfree";
-    public static final String topPaid = "toppaid";
-    public static final String topFlowUp = "topflowup";
-    public static final String topFlowDown = "topflowdown";
-    public static final String topFreeGame = "topfreegame";
-    public static final String topPaidGame = "toppaidgame";
+    public static final String topFree = "topFree";
+    public static final String topPaid = "topPaid";
+    public static final String topFreeFlowUp = "topFreeFlowUp";
+    public static final String topFreeFlowDown = "topFreeFlowDown";
+    public static final String topPaidFlowUp = "topPaidFlowUp";
+    public static final String topPaidFlowDown = "topPaidFlowDown";
+    public static final String topFreeGame = "topFreeGame";
+    public static final String topPaidGame = "topPaidGame";
+    public static final String topPaidFlowUpGame="topPaidFlowUpGame";
+    public static final String topFreeFlowUpGame="topFreeFlowUpGame";
+
     public String id;
     public int ranking;
     public int rankFloatNum = 0;
@@ -20,9 +25,9 @@ public class AppData {
     public int userRatingCount;
     public int userRatingCountForCurrentVersion;
     public String rankType;
-    private Date scrapeTime = new Date();
     public String currentVersion;
     public String currentVersionReleaseDate;
+    private Date scrapeTime = new Date();
 
     public AppData(String id) {
         this.id = id;
@@ -40,7 +45,7 @@ public class AppData {
         this.rankFloatNum = rankFloatNum;
     }
 
-    public AppData(String id, int ranking,  String rankType) {
+    public AppData(String id, int ranking, String rankType) {
         this.id = id;
         this.ranking = ranking;
         this.rankType = rankType;
