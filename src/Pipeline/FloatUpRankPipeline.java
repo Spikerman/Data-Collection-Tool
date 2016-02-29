@@ -6,7 +6,6 @@ import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -31,13 +30,11 @@ public class FloatUpRankPipeline implements Pipeline {
     @Override
     public void process(ResultItems resultItems, Task task) {
 
-        List appIdList = resultItems.get("upIdList");
-        int size = resultItems.get("size");
-        List<AppData> appDataList = new LinkedList<>();
 
-        for (int i = 0; i < size; i++) {
-            appDataList.add(new AppData(appIdList.get(i).toString(), i + 1, AppData.topFlowUp));
-        }
+        int size = resultItems.get("size");
+        List<AppData> appDataList = resultItems.get("appDataList");
+        List<String> appIdList = resultItems.get("appIdList");
+
         appInfoController.appendAppIdList(appIdList);
         appInfoController.appendAppDataList(appDataList);
     }

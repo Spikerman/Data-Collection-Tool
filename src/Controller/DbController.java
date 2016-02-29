@@ -17,7 +17,8 @@ public class DbController {
     public static final String insertReviewSql
             = "insert into Review (id,userId,appId,rate,version,date) values(?,?,?,?,?,?)";
     public static final String insertAppInfoSql
-            = "insert into AppInfo (appId,rankType,ranking,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion,date) values(?,?,?,?,?,?,?,?)";
+            = "insert into AppInfo (appId,rankType,ranking,rankFloatNum,currentVersion,currentVersionReleaseDate,averageUserRating,averageUserRatingForCurrentVersion,userRatingCount,userRatingCountForCurrentVersion,date) "
+            + "values(?,?,?,?,?,?,?,?,?,?,?)";
 
     public static final String insertAuthorSql
             = "insert into Author (userId,appId) values(?,?)";

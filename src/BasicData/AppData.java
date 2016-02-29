@@ -1,6 +1,5 @@
 package BasicData;
 
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -11,14 +10,19 @@ public class AppData {
     public static final String topPaid = "toppaid";
     public static final String topFlowUp = "topflowup";
     public static final String topFlowDown = "topflowdown";
+    public static final String topFreeGame = "topfreegame";
+    public static final String topPaidGame = "toppaidgame";
     public String id;
     public int ranking;
+    public int rankFloatNum = 0;
     public double averageUserRating;
     public double averageUserRatingForCurrentVersion;
     public int userRatingCount;
     public int userRatingCountForCurrentVersion;
     public String rankType;
     private Date scrapeTime = new Date();
+    public String currentVersion;
+    public String currentVersionReleaseDate;
 
     public AppData(String id) {
         this.id = id;
@@ -29,12 +33,18 @@ public class AppData {
         this.rankType = rankType;
     }
 
-    public AppData(String id, int ranking, String rankType) {
+    public AppData(String id, int ranking, int rankFloatNum, String rankType) {
+        this.id = id;
+        this.ranking = ranking;
+        this.rankType = rankType;
+        this.rankFloatNum = rankFloatNum;
+    }
+
+    public AppData(String id, int ranking,  String rankType) {
         this.id = id;
         this.ranking = ranking;
         this.rankType = rankType;
     }
-
 
 
     public double getAverageUserRating() {

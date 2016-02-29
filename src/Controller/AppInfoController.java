@@ -115,7 +115,7 @@ public class AppInfoController {
                 break;
 
             } catch (IOException e) {
-                System.out.println("network error" + "retry " + i + 1 + " times");
+                System.out.println("network error" + "retry " + (i + 1) + " times");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -166,9 +166,15 @@ public class AppInfoController {
                     else
                         appData.userRatingCountForCurrentVersion = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCountForCurrentVersion");
 
-
-//                    System.out.println(appData.ranking + " " + appData.id + "  " + appData.name + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
-//                            + appData.userRatingCountForCurrentVersion);
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("version"))
+                        appData.currentVersion = "";
+                    else
+                        appData.currentVersion = jsonObject.getJSONArray("results").getJSONObject(index).get("version").toString();
+//
+                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("currentVersionReleaseDate"))
+                        appData.currentVersionReleaseDate = "";
+                    else
+                        appData.currentVersionReleaseDate = jsonObject.getJSONArray("results").getJSONObject(index).get("currentVersionReleaseDate").toString();
 
                     index++;
                 }
