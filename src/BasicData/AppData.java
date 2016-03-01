@@ -15,7 +15,9 @@ public class AppData {
     public static final String topFreeGame = "topFreeGame";
     public static final String topPaidGame = "topPaidGame";
     public static final String topPaidFlowUpGame="topPaidFlowUpGame";
+    public static final String topPaidFlowDownGame="topPaidFlowDownGame";
     public static final String topFreeFlowUpGame="topFreeFlowUpGame";
+    public static final String topFreeFlowDownGame="topFreeFlowDownGame";
 
     public String id;
     public int ranking;

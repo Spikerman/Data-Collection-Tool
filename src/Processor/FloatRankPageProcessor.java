@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 //get the app name and detail information from the aso100.com
 
-public class FloatUpRankPageProcessor implements PageProcessor {
+public class FloatRankPageProcessor implements PageProcessor {
 
     public static final String FLOW_UP_FREE_URL = "http://aso100.com/rank/float/float/up";
     private final String FLOW_DOWN_FREE_URL = "http://aso100.com/rank/float/float/down";
@@ -46,7 +46,7 @@ public class FloatUpRankPageProcessor implements PageProcessor {
 
     private boolean isFirstPage = true;
 
-    public FloatUpRankPageProcessor() {
+    public FloatRankPageProcessor() {
         urls.add(FLOW_DOWN_FREE_URL);
         urls.add(FLOW_UP_PAID_URL);
         urls.add(FLOW_DOWN_PAID_URL);
@@ -55,17 +55,17 @@ public class FloatUpRankPageProcessor implements PageProcessor {
         urls.add(FLOW_UP_FREE_GAME_URL);
         urls.add(FLOW_DOWN_FREE_GAME_URL);
 
-        System.out.println("Processor.FloatUpRankPageProcessor Start!");
+        System.out.println("Processor.FloatRankPageProcessor Start!");
 
     }
 
     public static void main(String args[]) {
-        FloatUpRankPageProcessor floatUpRankPageProcessor = new FloatUpRankPageProcessor();
+        FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
         AppInfoController appInfoController = new AppInfoController();
         DbController dbController = new DbController();
 
-        Spider.create(floatUpRankPageProcessor)
-                .addUrl(FloatUpRankPageProcessor.FLOW_UP_FREE_URL)
+        Spider.create(floatRankPageProcessor)
+                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(new DataDownloader())
@@ -75,7 +75,7 @@ public class FloatUpRankPageProcessor implements PageProcessor {
         List<AppData> dataList = appInfoController.fetchAppInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
-                System.out.println(appData.ranking + "  " + "  " + appData.rankFloatNum + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+                System.out.println(appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
                         + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + "" + appData.getScrapeTime());
                 try {
                     insertAppInfo(appData, dbController);
@@ -115,7 +115,7 @@ public class FloatUpRankPageProcessor implements PageProcessor {
 
         // Elements contents = document.getElementsByClass("caption");
         for (int i = 0; i < thumbnails.size(); i++) {
-            AppData appData = getMetaAppData(thumbnails.get(i));
+            AppData appData = getMetaAppData(thumbnails.get(i), page);
             appDataList.add(appData);
             appIdList.add(appData.getId());
         }
@@ -135,7 +135,7 @@ public class FloatUpRankPageProcessor implements PageProcessor {
         return site;
     }
 
-    public AppData getMetaAppData(Element thumbnail) {
+    public AppData getMetaAppData(Element thumbnail, Page page) {
         String href = thumbnail.child(0).attr("href");
 
         Matcher userIdMatcher = appIdPattern.matcher(href);
@@ -157,16 +157,37 @@ public class FloatUpRankPageProcessor implements PageProcessor {
             rankFloatString = rankFloatString.replace("+", "");
 
         int rankFloatNum;
-        if (spans.get(0).attr("class").equals("down"))
+        if (spans.get(1).attr("class").equals("down"))
             rankFloatNum = 0 - Integer.valueOf(rankFloatString);
         else
             rankFloatNum = Integer.valueOf(rankFloatString);
 
-        System.out.println(appId + "  " + name + " " + rankNum + "  " + rankFloatNum);
 
         String type;
+        String url = page.getRequest().getUrl();
+        if (url.equals(FLOW_UP_FREE_URL)) {
+            type = AppData.topFreeFlowUp;
+        } else if (url.equals(FLOW_DOWN_FREE_URL)) {
+            type = AppData.topFreeFlowDown;
+        } else if (url.equals(FLOW_UP_PAID_URL)) {
+            type = AppData.topPaidFlowUp;
+        } else if (url.equals(FLOW_DOWN_PAID_URL)) {
+            type = AppData.topPaidFlowDown;
+        } else if (url.equals(FLOW_UP_PAID_GAME_URL)) {
+            type = AppData.topPaidFlowUpGame;
+        } else if (url.equals(FLOW_DOWN_PAID_GAME_URL)) {
+            type = AppData.topPaidFlowDownGame;
+        } else if (url.equals(FLOW_UP_FREE_GAME_URL)) {
+            type = AppData.topFreeFlowUpGame;
+        } else if (url.equals(FLOW_DOWN_FREE_GAME_URL)) {
+            type = AppData.topFreeFlowDownGame;
+        } else {
+            type = "unknown";
+            System.out.println("rank type unmatch");
+        }
 
+        System.out.println(appId + "  " + type + "  " + name + " " + rankNum + "  " + rankFloatNum);
 
-        return new AppData(appId, rankNum, rankFloatNum, AppData.topFreeFlowUp);
+        return new AppData(appId, rankNum, rankFloatNum, type);
     }
 }

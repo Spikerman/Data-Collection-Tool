@@ -6,7 +6,7 @@ import Downloader.DataDownloader;
 import Pipeline.AppStorePaidRankPipeline;
 import Pipeline.FloatUpRankPipeline;
 import Processor.AppStorePaidRankProcessor;
-import Processor.FloatUpRankPageProcessor;
+import Processor.FloatRankPageProcessor;
 import Processor.ProxyProcessor;
 import Processor.ReviewPageProcessor;
 import Utils.Toolkit;
@@ -24,7 +24,7 @@ import java.util.Set;
 public class DataCrawler {
 
     public static AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
-    public static FloatUpRankPageProcessor floatUpRankPageProcessor = new FloatUpRankPageProcessor();
+    public static FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
     public static ReviewPageProcessor reviewPageProcessor;
     public static ProxyProcessor proxyProcessor = new ProxyProcessor();
     public static AppInfoController appInfoController = new AppInfoController();
@@ -36,14 +36,14 @@ public class DataCrawler {
     public static void main(String args[]) {
 
         Spider.create(appStorePaidRankProcessor)
-                .addUrl(AppStorePaidRankProcessor.PAGE_URL)
+                .addUrl(AppStorePaidRankProcessor.PAID_PAGE_URL)
                 .addPipeline(new AppStorePaidRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
                 .run();
 
-        Spider.create(floatUpRankPageProcessor)
-                .addUrl(FloatUpRankPageProcessor.FLOW_UP_FREE_URL)
+        Spider.create(floatRankPageProcessor)
+                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
@@ -139,8 +139,8 @@ public class DataCrawler {
 //                .setDownloader(dataDownloader)
 //                .run();
 
-        Spider.create(floatUpRankPageProcessor)
-                .addUrl(FloatUpRankPageProcessor.FLOW_UP_FREE_URL)
+        Spider.create(floatRankPageProcessor)
+                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
