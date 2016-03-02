@@ -5,7 +5,7 @@ import Controller.DbController;
 import Downloader.DataDownloader;
 import Pipeline.AppStorePaidRankPipeline;
 import Pipeline.FloatUpRankPipeline;
-import Processor.AppStorePaidRankProcessor;
+import Processor.AppStoreRankProcessor;
 import Processor.FloatRankPageProcessor;
 import Processor.ProxyProcessor;
 import Processor.ReviewPageProcessor;
@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public class DataCrawler {
 
-    public static AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
+    public static AppStoreRankProcessor appStoreRankProcessor = new AppStoreRankProcessor();
     public static FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
     public static ReviewPageProcessor reviewPageProcessor;
     public static ProxyProcessor proxyProcessor = new ProxyProcessor();
@@ -35,8 +35,8 @@ public class DataCrawler {
 
     public static void main(String args[]) {
 
-        Spider.create(appStorePaidRankProcessor)
-                .addUrl(AppStorePaidRankProcessor.PAID_PAGE_URL)
+        Spider.create(appStoreRankProcessor)
+                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
                 .addPipeline(new AppStorePaidRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
@@ -51,7 +51,7 @@ public class DataCrawler {
 
 
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-        List<AppData> dataList = appInfoController.fetchAppInfo();
+        List<AppData> dataList = appInfoController.fetchAppDetailInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
                 System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
@@ -132,8 +132,8 @@ public class DataCrawler {
     }
 
     public void fetchAllAppId() {
-//        Spider.create(appStorePaidRankProcessor)
-//                .addUrl(AppStorePaidRankProcessor.FLOW_UP_FREE_URL)
+//        Spider.create(appStoreRankProcessor)
+//                .addUrl(AppStoreRankProcessor.FLOW_UP_FREE_URL)
 //                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
 //                .thread(1)
 //                .setDownloader(dataDownloader)
@@ -149,7 +149,7 @@ public class DataCrawler {
 
     public void fetchAllAppInfo() {
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-        List<AppData> dataList = appInfoController.fetchAppInfo();
+        List<AppData> dataList = appInfoController.fetchAppDetailInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
                 System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "

@@ -17,29 +17,29 @@ import java.util.List;
  */
 
 
-public class AppStorePaidRankProcessor implements PageProcessor {
+public class AppStoreRankProcessor implements PageProcessor {
 
     public static final String PAID_PAGE_URL = "http://www.apple.com/cn/itunes/charts/paid-apps/";
     public static final String FREE_PAGE_URL = "http://www.apple.com/cn/itunes/charts/free-apps/";
     private Site site = Site.me().setCycleRetryTimes(3).setSleepTime(1000).setTimeOut(20000);
     private boolean isFirstPage=true;
-    public AppStorePaidRankProcessor() {
-        System.out.println("Processor.AppStorePaidRankProcessor Start!");
+    public AppStoreRankProcessor() {
+        System.out.println("Processor.AppStoreRankProcessor Start!");
     }
 
     public static void main(String args[]) {
         AppInfoController appInfoController = new AppInfoController();
-        AppStorePaidRankProcessor appStorePaidRankProcessor = new AppStorePaidRankProcessor();
+        AppStoreRankProcessor appStoreRankProcessor = new AppStoreRankProcessor();
         DataDownloader dataDownloader = new DataDownloader();
 
-        Spider.create(appStorePaidRankProcessor)
-                .addUrl(AppStorePaidRankProcessor.PAID_PAGE_URL)
+        Spider.create(appStoreRankProcessor)
+                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
                 .addPipeline(new AppStorePaidRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
                 .run();
 
-        List<AppData> dataList = appInfoController.fetchAppInfo();
+        List<AppData> dataList = appInfoController.fetchAppDetailInfo();
         if (dataList != null) {
             int i=1;
             for (AppData appData : dataList) {

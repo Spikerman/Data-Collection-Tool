@@ -47,13 +47,13 @@ public class FloatRankPageProcessor implements PageProcessor {
     private boolean isFirstPage = true;
 
     public FloatRankPageProcessor() {
-        urls.add(FLOW_DOWN_FREE_URL);
-        urls.add(FLOW_UP_PAID_URL);
+        //urls.add(FLOW_DOWN_FREE_URL);
+        //urls.add(FLOW_UP_PAID_URL);
         urls.add(FLOW_DOWN_PAID_URL);
-        urls.add(FLOW_UP_PAID_GAME_URL);
-        urls.add(FLOW_DOWN_PAID_GAME_URL);
-        urls.add(FLOW_UP_FREE_GAME_URL);
-        urls.add(FLOW_DOWN_FREE_GAME_URL);
+        //urls.add(FLOW_UP_PAID_GAME_URL);
+        //urls.add(FLOW_DOWN_PAID_GAME_URL);
+        //urls.add(FLOW_UP_FREE_GAME_URL);
+        //urls.add(FLOW_DOWN_FREE_GAME_URL);
 
         System.out.println("Processor.FloatRankPageProcessor Start!");
 
@@ -72,17 +72,19 @@ public class FloatRankPageProcessor implements PageProcessor {
                 .run();
 
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-        List<AppData> dataList = appInfoController.fetchAppInfo();
+        List<AppData> dataList = appInfoController.fetchAppDetailInfo();
         if (dataList != null) {
             for (AppData appData : dataList) {
                 System.out.println(appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
-                        + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + "" + appData.getScrapeTime());
+                        + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + " " + appData.getScrapeTime());
                 try {
                     insertAppInfo(appData, dbController);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
+        } else {
+            System.out.println("fetch error, system end");
         }
     }
 

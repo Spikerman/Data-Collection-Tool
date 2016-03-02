@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -20,12 +21,80 @@ public class AppInfoController {
 
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
-
+    public int size = 100;
+    //补足appDataList的完整信息
     private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
     private int retryTimes = 5;
+    private List<String> errorIdList = new LinkedList<>();
 
     public AppInfoController() {
+    }
+
+    public List<AppData> addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
+        List<AppData> list = new LinkedList<>();
+
+        try {
+            int jsonObjectIndex = 0;
+
+            for (int i = 0; i < entryList.size(); i++) {
+                AppData appData = entryList.get(i);
+                String trackId = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("trackId").toString();
+
+                while (!appData.getId().equals(trackId)) {
+                    errorIdList.add(appData.getId());
+                    System.out.println("error Id: "+appData.getId());
+
+                    i++;
+
+                    if (i >= size) {
+                        System.out.println("appDataList size: " + list.size());
+                        return list;
+                    } else {
+                        appData = entryList.get(i);
+                    }
+                }
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("averageUserRating"))
+                    appData.averageUserRating = 0;
+                else
+                    appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("averageUserRating");
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("averageUserRatingForCurrentVersion"))
+                    appData.averageUserRatingForCurrentVersion = 0;
+                else
+                    appData.averageUserRatingForCurrentVersion = (double) jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("averageUserRatingForCurrentVersion");
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("userRatingCount"))
+                    appData.userRatingCount = 0;
+                else
+                    appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("userRatingCount");
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("userRatingCountForCurrentVersion"))
+                    appData.userRatingCountForCurrentVersion = 0;
+                else
+                    appData.userRatingCountForCurrentVersion = (int) jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("userRatingCountForCurrentVersion");
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("version"))
+                    appData.currentVersion = "";
+                else
+                    appData.currentVersion = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("version").toString();
+
+                if (jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).isNull("currentVersionReleaseDate"))
+                    appData.currentVersionReleaseDate = "";
+                else
+                    appData.currentVersionReleaseDate = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("currentVersionReleaseDate").toString();
+
+                list.add(appData);
+                jsonObjectIndex++;
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        System.out.println("appDataList size: " + list.size());
+        return list;
     }
 
     public List<AppData> getAppDataList() {
@@ -44,7 +113,6 @@ public class AppInfoController {
         this.appIdList = appIdList;
     }
 
-
     public void appendAppIdList(List entryAppIdList) {
         appIdList.addAll(entryAppIdList);
     }
@@ -53,31 +121,34 @@ public class AppInfoController {
         appDataList.addAll(entryAppDataList);
     }
 
+    public void setSize(int size) {
+        this.size = size;
+    }
+
     //acquire all app info according to app id, and return the app data list,
     //return null if network error
-    public List<AppData> fetchAppInfo() {
+    public List<AppData> fetchAppDetailInfo() {
+        List<AppData> resultAppDataList = new LinkedList<>();
 
-        List<List> subAppDataList = Toolkit.splitArray(appDataList, 100);
+        List<List> subAppDataList = Toolkit.splitArray(appDataList, size);
 
-        for (List dataList : subAppDataList) {
+        System.out.println("start fetch info");
+
+        for (int i = 0; i < subAppDataList.size(); i++) {
+            List<AppData> dataList = subAppDataList.get(i);
             JSONObject jsonObject = getJSON(dataList);
 
             if (jsonObject != null) {
-                addAppDataInfo(dataList, jsonObject);
+                dataList = addAppDataInfo(dataList, jsonObject);
+                resultAppDataList.addAll(dataList);
             } else {
                 System.out.println("jsonObject=null, fetch error");
                 return null;
             }
         }
 
-        //清空只含有id的appDataList元素,并重新填充信息完整的元素
-        appDataList.clear();
-
-        for (List subList : subAppDataList) {
-            appDataList.addAll(subList);
-        }
-
-        return appDataList;
+        System.out.println("total size: " + resultAppDataList.size());
+        return resultAppDataList;
     }
 
     public JSONObject getJSON(List<AppData> appDataList) {
@@ -86,7 +157,6 @@ public class AppInfoController {
         boolean success = false;
 
         int i = 0;
-
         while (i < retryTimes) {
             try {
 
@@ -95,7 +165,7 @@ public class AppInfoController {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuffer json = new StringBuffer(2048);
+                StringBuffer json = new StringBuffer(4096);
 
                 String tmp;
                 while ((tmp = reader.readLine()) != null) {
@@ -105,10 +175,11 @@ public class AppInfoController {
                 reader.close();
                 jsonObject = new JSONObject(json.toString());
 
-                if (0 == (int) jsonObject.get("resultCount")) {
+                int resultCount = (int) jsonObject.get("resultCount");
+                if (0 == resultCount) {
                     jsonObject = null;
                 } else {
-                    System.out.println("json object result count: " + (int) jsonObject.get("resultCount"));
+                    System.out.println("json object result count: " + resultCount);
                 }
 
                 success = true;
@@ -124,68 +195,21 @@ public class AppInfoController {
 
         if (success) {
             System.out.println("connect success!");
+            return jsonObject;
         } else {
             System.out.println("connect fail!");
+            return null;
         }
-        return jsonObject;
     }
 
     public String idListStringFormation(List<AppData> entryList) {
         String idListString = "";
+        int i = 0;
         for (AppData appData : entryList) {
             idListString += appData.getId() + ",";
+            i++;
         }
         return idListString;
-    }
-
-    //补足appDataList的完整信息
-    public void addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
-        try {
-            int index = 0;
-            if (entryList.size() == (int) jsonObject.get("resultCount")) {
-                for (AppData appData : entryList) {
-
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("averageUserRating"))
-                        appData.averageUserRating = 0;
-                    else
-                        appData.averageUserRating = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRating");
-
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("averageUserRatingForCurrentVersion"))
-                        appData.averageUserRatingForCurrentVersion = 0;
-                    else
-                        appData.averageUserRatingForCurrentVersion = (double) jsonObject.getJSONArray("results").getJSONObject(index).get("averageUserRatingForCurrentVersion");
-
-
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("userRatingCount"))
-                        appData.userRatingCount = 0;
-                    else
-                        appData.userRatingCount = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCount");
-
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("userRatingCountForCurrentVersion"))
-                        appData.userRatingCountForCurrentVersion = 0;
-                    else
-                        appData.userRatingCountForCurrentVersion = (int) jsonObject.getJSONArray("results").getJSONObject(index).get("userRatingCountForCurrentVersion");
-
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("version"))
-                        appData.currentVersion = "";
-                    else
-                        appData.currentVersion = jsonObject.getJSONArray("results").getJSONObject(index).get("version").toString();
-//
-                    if (jsonObject.getJSONArray("results").getJSONObject(index).isNull("currentVersionReleaseDate"))
-                        appData.currentVersionReleaseDate = "";
-                    else
-                        appData.currentVersionReleaseDate = jsonObject.getJSONArray("results").getJSONObject(index).get("currentVersionReleaseDate").toString();
-
-                    index++;
-                }
-            } else {
-                System.out.println("the size of app data list does not equal to the amount of return jsonObject!");
-            }
-
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
     }
 
 }
