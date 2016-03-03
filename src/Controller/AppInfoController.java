@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,17 +23,24 @@ public class AppInfoController {
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
     public int size = 100;
+
     //补足appDataList的完整信息
     private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
     private int retryTimes = 5;
-    private List<String> errorIdList = new LinkedList<>();
+    private List<String> errorIdList = Collections.synchronizedList(new ArrayList<>());
+
+    private List<AppData> appInfoList = Collections.synchronizedList(new ArrayList<>());
+
+    public AppInfoController() {
+    }
+
+    public List<AppData> getAppInfoList() {
+        return appInfoList;
+    }
 
     public List<String> getErrorIdList() {
         return errorIdList;
-    }
-
-    public AppInfoController() {
     }
 
     public List<AppData> addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
@@ -48,7 +56,7 @@ public class AppInfoController {
 
                 while (!appData.getId().equals(trackId)) {
                     errorIdList.add(appData.getId());
-                    System.out.println("error Id: "+appData.getId());
+                    System.out.println("error Id: " + appData.getId());
 
                     i++;
 
@@ -130,13 +138,46 @@ public class AppInfoController {
         this.size = size;
     }
 
+
+    public List<List> getSubAppDataList() {
+        List<List> subAppDataList;
+        if (appDataList.size() == 0) {
+            System.out.println("get nothing from crawler, function return");
+            return null;
+        } else {
+            subAppDataList = Toolkit.splitArray(appDataList, size);
+            return subAppDataList;
+        }
+    }
+
+    public List<AppData> fetchAppDetailInfo(List<AppData> dataList) {
+
+        System.out.println("start fetch info");
+
+        JSONObject jsonObject = getJSON(dataList);
+        List<AppData> resultAppDataList = new LinkedList<>();
+
+        if (jsonObject != null) {
+            dataList = addAppDataInfo(dataList, jsonObject);
+            resultAppDataList.addAll(dataList);
+        } else {
+            System.out.println("jsonObject=null, fetch error");
+            return null;
+        }
+        return resultAppDataList;
+    }
+
     //acquire all app info according to app id, and return the app data list,
     //return null if network error
     public List<AppData> fetchAppDetailInfo() {
         List<AppData> resultAppDataList = new LinkedList<>();
-
-        List<List> subAppDataList = Toolkit.splitArray(appDataList, size);
-
+        List<List> subAppDataList;
+        if (appDataList.size() == 0) {
+            System.out.println("get nothing from crawler, function return");
+            return null;
+        } else {
+            subAppDataList = Toolkit.splitArray(appDataList, size);
+        }
         System.out.println("start fetch info");
 
         for (int i = 0; i < subAppDataList.size(); i++) {
@@ -215,6 +256,42 @@ public class AppInfoController {
             i++;
         }
         return idListString;
+    }
+
+    public void startFetch() {
+        List<List> subAppDataList = getSubAppDataList();
+
+        Thread[] threads = new Thread[getSubAppDataList().size()];
+        for (int i = 0; i < subAppDataList.size(); i++) {
+            List<AppData> list = getSubAppDataList().get(i);
+            Runnable runnable = new fetchRunnable(list);
+            threads[i] = new Thread(runnable);
+            threads[i].start();
+            System.out.println("Thread " + (i + 1) + " start");
+        }
+
+        try {
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("all threads complete!");
+    }
+
+    class fetchRunnable implements Runnable {
+        List<AppData> appDataList = new LinkedList<>();
+
+        public fetchRunnable(List<AppData> subAppDataList) {
+            this.appDataList = subAppDataList;
+        }
+
+        public void run() {
+            appInfoList.addAll(fetchAppDetailInfo(appDataList));
+            System.out.println(appInfoList.size());
+        }
     }
 
 }

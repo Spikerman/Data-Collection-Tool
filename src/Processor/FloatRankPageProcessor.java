@@ -45,8 +45,8 @@ public class FloatRankPageProcessor implements PageProcessor {
     private boolean isFirstPage = true;
 
     public FloatRankPageProcessor() {
-        //urls.add(FLOW_DOWN_FREE_URL);
-        //urls.add(FLOW_UP_PAID_URL);
+        urls.add(FLOW_DOWN_FREE_URL);
+        urls.add(FLOW_UP_PAID_URL);
         //urls.add(FLOW_DOWN_PAID_URL);
         //urls.add(FLOW_UP_PAID_GAME_URL);
         //urls.add(FLOW_DOWN_PAID_GAME_URL);
@@ -70,16 +70,20 @@ public class FloatRankPageProcessor implements PageProcessor {
                 .run();
 
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-        List<AppData> dataList = appInfoController.fetchAppDetailInfo();
+        appInfoController.startFetch();
+        List<AppData> dataList = appInfoController.getAppInfoList();
+
         if (dataList != null) {
             for (AppData appData : dataList) {
-                System.out.println(appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+                int i = 1;
+                System.out.println(i + appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
                         + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + " " + appData.getScrapeTime());
                 try {
                     insertAppInfo(appData, dbController);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                i++;
             }
         } else {
             System.out.println("fetch error, system end");
@@ -90,7 +94,7 @@ public class FloatRankPageProcessor implements PageProcessor {
         errorIdList.addAll(appInfoController.getErrorIdList());
 
         dbController.setInsertUnavailableAppSqlPst(DbController.insertUnavailableAppSql);
-        if (errorIdList != null) {
+        if (errorIdList.size() != 0) {
             for (String id : errorIdList) {
                 try {
                     dbController.insertUnavailableAppPst.setString(1, id);
