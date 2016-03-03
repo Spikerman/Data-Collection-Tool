@@ -23,10 +23,14 @@ public class DbController {
     public static final String insertAuthorSql
             = "insert into Author (userId,appId) values(?,?)";
 
+    public static final String insertUnavailableAppSql
+            = "insert into UnavailableApp (appId) values (?)";
+
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
     public PreparedStatement insertAppInfoPst = null;
     public PreparedStatement insertAuthorPst = null;
+    public PreparedStatement insertUnavailableAppPst = null;
 
     public DbController() {
         try {
@@ -71,6 +75,15 @@ public class DbController {
             e.printStackTrace();
         }
     }
+
+    public void setInsertUnavailableAppSqlPst(String sql) {
+        try {
+            insertUnavailableAppPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void close() {
         try {

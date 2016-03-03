@@ -28,6 +28,10 @@ public class AppInfoController {
     private int retryTimes = 5;
     private List<String> errorIdList = new LinkedList<>();
 
+    public List<String> getErrorIdList() {
+        return errorIdList;
+    }
+
     public AppInfoController() {
     }
 
@@ -35,6 +39,7 @@ public class AppInfoController {
         List<AppData> list = new LinkedList<>();
 
         try {
+
             int jsonObjectIndex = 0;
 
             for (int i = 0; i < entryList.size(); i++) {

@@ -26,11 +26,9 @@ import java.util.regex.Pattern;
 public class FloatRankPageProcessor implements PageProcessor {
 
     public static final String FLOW_UP_FREE_URL = "http://aso100.com/rank/float/float/up";
+    public static final String FLOW_DOWN_PAID_URL = "http://aso100.com/rank/float/float/down/brand/paid";
     private final String FLOW_DOWN_FREE_URL = "http://aso100.com/rank/float/float/down";
-
     private final String FLOW_UP_PAID_URL = "http://aso100.com/rank/float/float/up/brand/paid";
-    private final String FLOW_DOWN_PAID_URL = "http://aso100.com/rank/float/float/down/brand/paid";
-
     private final String FLOW_UP_PAID_GAME_URL = "http://aso100.com/rank/float/float/up/genre/6014/brand/paid";
     private final String FLOW_DOWN_PAID_GAME_URL = "http://aso100.com/rank/float/float/down/brand/paid/genre/6014";
 
@@ -49,7 +47,7 @@ public class FloatRankPageProcessor implements PageProcessor {
     public FloatRankPageProcessor() {
         //urls.add(FLOW_DOWN_FREE_URL);
         //urls.add(FLOW_UP_PAID_URL);
-        urls.add(FLOW_DOWN_PAID_URL);
+        //urls.add(FLOW_DOWN_PAID_URL);
         //urls.add(FLOW_UP_PAID_GAME_URL);
         //urls.add(FLOW_DOWN_PAID_GAME_URL);
         //urls.add(FLOW_UP_FREE_GAME_URL);
@@ -65,7 +63,7 @@ public class FloatRankPageProcessor implements PageProcessor {
         DbController dbController = new DbController();
 
         Spider.create(floatRankPageProcessor)
-                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
+                .addUrl(FloatRankPageProcessor.FLOW_DOWN_PAID_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(new DataDownloader())
@@ -85,6 +83,24 @@ public class FloatRankPageProcessor implements PageProcessor {
             }
         } else {
             System.out.println("fetch error, system end");
+            return;
+        }
+
+        List<String> errorIdList = new LinkedList<>();
+        errorIdList.addAll(appInfoController.getErrorIdList());
+
+        dbController.setInsertUnavailableAppSqlPst(DbController.insertUnavailableAppSql);
+        if (errorIdList != null) {
+            for (String id : errorIdList) {
+                try {
+                    dbController.insertUnavailableAppPst.setString(1, id);
+                    dbController.insertUnavailableAppPst.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            System.out.println("no unavailable app");
         }
     }
 
