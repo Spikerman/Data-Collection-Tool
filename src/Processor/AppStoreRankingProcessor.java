@@ -33,9 +33,9 @@ public class AppStoreRankingProcessor {
         urlList.add(NEW_GAME_URL);
     }
 
-    public static void main(String args[]){
+    public static void main(String args[]) {
         AppInfoController appInfoController = new AppInfoController();
-        AppStoreRankingProcessor appStoreRankingProcessor=new AppStoreRankingProcessor();
+        AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();
         appStoreRankingProcessor.fetchRankAppInfo();
         appInfoController.appendAppDataList(appStoreRankingProcessor.getAppDataList());
         appInfoController.fetchAppDetailInfo();
@@ -99,8 +99,14 @@ public class AppStoreRankingProcessor {
                 else
                     type = AppData.newGame;
 
-                System.out.println((i+1)+"  "+id+"  "+type);
-                appDataList.add(new AppData(id, i + 1, type));
+                int rank;
+                if (type.equals(AppData.newGame))
+                    rank = 0;
+                else
+                    rank = i + 1;
+
+                System.out.println(rank + "  " + id + "  " + type);
+                appDataList.add(new AppData(id, rank, type));
 
             }
         } catch (Exception e) {
@@ -109,11 +115,13 @@ public class AppStoreRankingProcessor {
         return appDataList;
     }
 
-    public void fetchRankAppInfo() {
+    public List<AppData> fetchRankAppInfo() {
         for (String url : urlList) {
             JSONObject jsonObject = getJSON(url);
             appDataList.addAll(getAppDataList(jsonObject, url));
         }
+
+        return appDataList;
     }
 
     public List<AppData> getAppDataList() {

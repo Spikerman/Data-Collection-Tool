@@ -139,7 +139,7 @@ public class AppInfoController {
     }
 
 
-    public List<List> getSubAppDataList() {
+    private List<List> getSubAppDataList() {
         List<List> subAppDataList;
         if (appDataList.size() == 0) {
             System.out.println("get nothing from crawler, function return");

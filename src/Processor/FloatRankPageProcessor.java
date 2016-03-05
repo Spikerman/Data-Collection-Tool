@@ -47,11 +47,11 @@ public class FloatRankPageProcessor implements PageProcessor {
     public FloatRankPageProcessor() {
         urls.add(FLOW_DOWN_FREE_URL);
         urls.add(FLOW_UP_PAID_URL);
-        //urls.add(FLOW_DOWN_PAID_URL);
-        //urls.add(FLOW_UP_PAID_GAME_URL);
-        //urls.add(FLOW_DOWN_PAID_GAME_URL);
-        //urls.add(FLOW_UP_FREE_GAME_URL);
-        //urls.add(FLOW_DOWN_FREE_GAME_URL);
+        urls.add(FLOW_DOWN_PAID_URL);
+        urls.add(FLOW_UP_PAID_GAME_URL);
+        urls.add(FLOW_DOWN_PAID_GAME_URL);
+        urls.add(FLOW_UP_FREE_GAME_URL);
+        urls.add(FLOW_DOWN_FREE_GAME_URL);
 
         System.out.println("Processor.FloatRankPageProcessor Start!");
 
@@ -63,7 +63,7 @@ public class FloatRankPageProcessor implements PageProcessor {
         DbController dbController = new DbController();
 
         Spider.create(floatRankPageProcessor)
-                .addUrl(FloatRankPageProcessor.FLOW_DOWN_PAID_URL)
+                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(new DataDownloader())
