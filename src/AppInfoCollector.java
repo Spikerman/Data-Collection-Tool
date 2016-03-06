@@ -7,6 +7,7 @@ import Processor.AppStoreRankingProcessor;
 import Processor.FloatRankPageProcessor;
 import us.codecraft.webmagic.Spider;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,8 +30,12 @@ public class AppInfoCollector {
                 .setDownloader(new DataDownloader())
                 .run();
 
+        //collect update information from old app data in Database
+        appInfoController.appendAppDataList(getUpdateAppInfo());
+
         //collect top rank data information through iTunes api
         appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo());
+
 
         //fetch app detail information through iTunes api
         appInfoController.startFetch();
@@ -83,5 +88,26 @@ public class AppInfoCollector {
         }
     }
 
+    public static List<AppData> getUpdateAppInfo() {
+        DbController dbController = new DbController();
+        dbController.setSelectAppIdPst(DbController.selectAppIdSql);
+        List<AppData> appDataList = new LinkedList<>();
+        ResultSet resultSet = null;
+        try {
+            resultSet = dbController.selectAppIdPst.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (resultSet != null) {
+            try {
+                while (resultSet.next()) {
+                    appDataList.add(new AppData(resultSet.getString("appId"), "update"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
+        }
+        return appDataList;
+    }
 }

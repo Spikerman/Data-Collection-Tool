@@ -60,7 +60,7 @@ public class AppInfoController {
 
                     i++;
 
-                    if (i >= size) {
+                    if (i >= entryList.size()) {
                         System.out.println("appDataList size: " + list.size());
                         return list;
                     } else {

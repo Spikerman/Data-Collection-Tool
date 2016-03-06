@@ -37,7 +37,7 @@ public class FloatRankPageProcessor implements PageProcessor {
 
 
     private Site site = Site.me().setCycleRetryTimes(5).setSleepTime(5000).setTimeOut(200000);
-    private int size = 200;
+    private int size = 0;
     private List<String> urls = new ArrayList<>();
 
     private Pattern appIdPattern = Pattern.compile("appid/\\d+");

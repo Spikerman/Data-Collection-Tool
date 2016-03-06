@@ -3,7 +3,6 @@ import BasicData.Review;
 import Controller.AppInfoController;
 import Controller.DbController;
 import Downloader.DataDownloader;
-import Pipeline.AppStorePaidRankPipeline;
 import Pipeline.FloatUpRankPipeline;
 import Processor.AppStoreRankProcessor;
 import Processor.FloatRankPageProcessor;
@@ -35,12 +34,12 @@ public class DataCrawler {
 
     public static void main(String args[]) {
 
-        Spider.create(appStoreRankProcessor)
-                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
-                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
-                .thread(1)
-                .setDownloader(dataDownloader)
-                .run();
+//        Spider.create(appStoreRankProcessor)
+//                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
+//                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
+//                .thread(1)
+//                .setDownloader(dataDownloader)
+//                .run();
 
         Spider.create(floatRankPageProcessor)
                 .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
@@ -51,7 +50,9 @@ public class DataCrawler {
 
 
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
+
         List<AppData> dataList = appInfoController.fetchAppDetailInfo();
+
         if (dataList != null) {
             for (AppData appData : dataList) {
                 System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
@@ -65,22 +66,25 @@ public class DataCrawler {
         }
 
 
-        proxyProcessor.setScrapePageCount(10);
-        Spider.create(proxyProcessor)
-                .addUrl(proxyProcessor.INITIAL_URL)
-                .thread(3)
-                .setDownloader(dataDownloader)
-                .run();
+//        proxyProcessor.setScrapePageCount(10);
+//        Spider.create(proxyProcessor)
+//                .addUrl(proxyProcessor.INITIAL_URL)
+//                .thread(3)
+//                .setDownloader(dataDownloader)
+//                .run();
 
 
         List appIdList = appInfoController.getAppIdList();
         appIdList = Toolkit.removeDuplicate(appIdList);
+        appIdList = appIdList.subList(0, 3);
+
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
             reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());
+
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)
-                    .thread(5)
+                    .thread(20)
                     .setDownloader(dataDownloader)
                     .run();
 
@@ -91,9 +95,16 @@ public class DataCrawler {
             for (Review review : reviewSet) {
                 try {
                     insertReview(review, dbController);
-                    insertAuthor(review, dbController);
                 } catch (SQLException e) {
                     System.out.println("duplicate one, skip it");
+                }
+
+                try {
+                    insertAuthor(review, dbController);
+
+                } catch (SQLException e) {
+                    System.out.println("duplicate one, skip it");
+
                 }
             }
         }
@@ -113,7 +124,7 @@ public class DataCrawler {
 
     public static void insertAuthor(Review review, DbController dbController) throws SQLException {
         dbController.insertAuthorPst.setString(1, review.getAuthorId());
-        dbController.insertAuthorPst.setString(2, review.getAuthorId());
+        dbController.insertAuthorPst.setString(2, review.getAppId());
         dbController.insertAuthorPst.executeLargeUpdate();
 
     }

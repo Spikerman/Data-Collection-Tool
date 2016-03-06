@@ -26,27 +26,34 @@ public class DbController {
     public static final String insertUnavailableAppSql
             = "insert into UnavailableApp (appId) values (?)";
 
+    public static final String selectAppIdSql
+            = "select distinct appId from AppInfo";
+
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
     public PreparedStatement insertAppInfoPst = null;
     public PreparedStatement insertAuthorPst = null;
     public PreparedStatement insertUnavailableAppPst = null;
+    public PreparedStatement selectAppIdPst = null;
+
 
     public DbController() {
         try {
             Class.forName(name);
             connection = DriverManager.getConnection(url, user, password);
+            System.out.println("Connect Success");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String args[]) {
-        String sql = "insert into Author values('123456','654321')";
+        String sql = "insert into UnavailableApp values('5555555')";
         DbController dbController = new DbController();
         try {
-            dbController.insertReviewPst.executeUpdate();
-            dbController.close();
+            PreparedStatement preparedStatement = dbController.connection.prepareStatement(sql);
+            preparedStatement.executeUpdate();
+            //dbController.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -79,6 +86,14 @@ public class DbController {
     public void setInsertUnavailableAppSqlPst(String sql) {
         try {
             insertUnavailableAppPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setSelectAppIdPst(String sql) {
+        try {
+            selectAppIdPst = connection.prepareStatement(sql);
         } catch (Exception e) {
             e.printStackTrace();
         }

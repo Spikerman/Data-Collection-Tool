@@ -31,7 +31,6 @@ public class FloatUpRankPipeline implements Pipeline {
     public void process(ResultItems resultItems, Task task) {
 
 
-        int size = resultItems.get("size");
         List<AppData> appDataList = resultItems.get("appDataList");
         List<String> appIdList = resultItems.get("appIdList");
 
