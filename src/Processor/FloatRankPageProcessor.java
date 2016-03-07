@@ -45,13 +45,13 @@ public class FloatRankPageProcessor implements PageProcessor {
     private boolean isFirstPage = true;
 
     public FloatRankPageProcessor() {
-        urls.add(FLOW_DOWN_FREE_URL);
-        urls.add(FLOW_UP_PAID_URL);
-        urls.add(FLOW_DOWN_PAID_URL);
-        urls.add(FLOW_UP_PAID_GAME_URL);
-        urls.add(FLOW_DOWN_PAID_GAME_URL);
-        urls.add(FLOW_UP_FREE_GAME_URL);
-        urls.add(FLOW_DOWN_FREE_GAME_URL);
+//        urls.add(FLOW_DOWN_FREE_URL);
+//        urls.add(FLOW_UP_PAID_URL);
+//        urls.add(FLOW_DOWN_PAID_URL);
+//        urls.add(FLOW_UP_PAID_GAME_URL);
+//        urls.add(FLOW_DOWN_PAID_GAME_URL);
+//        urls.add(FLOW_UP_FREE_GAME_URL);
+//        urls.add(FLOW_DOWN_FREE_GAME_URL);
 
         System.out.println("Processor.FloatRankPageProcessor Start!");
 

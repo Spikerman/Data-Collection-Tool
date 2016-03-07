@@ -7,9 +7,9 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,10 +28,10 @@ public class AppInfoController {
     //补足appDataList的完整信息
     private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
-    private int retryTimes = 5;
-    private List<String> errorIdList = Collections.synchronizedList(new ArrayList<>());
+    private int retryTimes = 10;
 
-    private List<AppData> appInfoList = Collections.synchronizedList(new ArrayList<>());
+    private List<String> errorIdList = Collections.synchronizedList(new LinkedList<>());
+    private List<AppData> appInfoList = Collections.synchronizedList(new LinkedList<>());
 
     public AppInfoController() {
     }
@@ -46,15 +46,20 @@ public class AppInfoController {
 
     public List<AppData> addAppDataInfo(List<AppData> entryList, JSONObject jsonObject) {
         List<AppData> list = new LinkedList<>();
-
         try {
-
+            int resultCount = (int) jsonObject.get("resultCount");
             int jsonObjectIndex = 0;
 
             for (int i = 0; i < entryList.size(); i++) {
                 AppData appData = entryList.get(i);
-                String trackId = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("trackId").toString();
+                String trackId;
 
+                if (jsonObjectIndex < resultCount)
+                    trackId = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("trackId").toString();
+                else {
+                    System.out.println("x appDataList size: " + list.size());
+                    return list;
+                }
                 while (!appData.getId().equals(trackId)) {
                     errorIdList.add(appData.getId());
                     System.out.println("error Id: " + appData.getId());
@@ -62,7 +67,7 @@ public class AppInfoController {
                     i++;
 
                     if (i >= entryList.size()) {
-                        System.out.println("appDataList size: " + list.size());
+                        System.out.println("x appDataList size: " + list.size());
                         return list;
                     } else {
                         appData = entryList.get(i);
@@ -105,6 +110,7 @@ public class AppInfoController {
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            e.printStackTrace();
         }
 
         System.out.println("appDataList size: " + list.size());
@@ -202,6 +208,7 @@ public class AppInfoController {
 
         JSONObject jsonObject = null;
         boolean success = false;
+        InputStream inputStream = null;
 
         int i = 0;
         while (i < retryTimes) {
@@ -215,7 +222,9 @@ public class AppInfoController {
                 connection.setConnectTimeout(20000);
                 connection.setReadTimeout(20000);
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                inputStream = connection.getInputStream();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 StringBuffer json = new StringBuffer(4096);
 
                 String tmp;
@@ -230,22 +239,30 @@ public class AppInfoController {
                 if (0 == resultCount) {
                     jsonObject = null;
                 } else {
-                    System.out.println("json object result count: " + resultCount);
+                    System.out.println("json object count: " + resultCount);
                 }
 
                 success = true;
                 break;
 
             } catch (IOException e) {
-                System.out.println("network error" + "retry " + (i + 1) + " times");
+                System.out.println("network error " + "retry " + (i + 1) + " times");
             } catch (JSONException e) {
                 e.printStackTrace();
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        //release the resource
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             i++;
         }
 
         if (success) {
-            System.out.println("connect success!");
             return jsonObject;
         } else {
             System.out.println("connect fail!");
@@ -294,7 +311,13 @@ public class AppInfoController {
         }
 
         public void run() {
-            appInfoList.addAll(fetchAppDetailInfo(appDataList));
+            List temp = fetchAppDetailInfo(appDataList);
+            if (temp != null) {
+                appInfoList.addAll(temp);
+            } else {
+                System.out.println("fetch error");
+                return;
+            }
             System.out.println(appInfoList.size());
         }
     }
