@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,6 +210,10 @@ public class AppInfoController {
                 String idListString = idListStringFormation(appDataList);
                 URL url = new URL(String.format(ITUNES_SEARCH_API, idListString));
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                //set time out to avoid thread rigid
+                connection.setConnectTimeout(20000);
+                connection.setReadTimeout(20000);
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuffer json = new StringBuffer(4096);
