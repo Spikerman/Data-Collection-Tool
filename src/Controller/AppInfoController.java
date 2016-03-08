@@ -4,6 +4,8 @@ import BasicData.AppData;
 import Utils.Toolkit;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +35,11 @@ public class AppInfoController {
     private List<String> errorIdList = Collections.synchronizedList(new LinkedList<>());
     private List<AppData> appInfoList = Collections.synchronizedList(new LinkedList<>());
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+
     public AppInfoController() {
+
     }
 
     public List<AppData> getAppInfoList() {
@@ -63,7 +69,7 @@ public class AppInfoController {
                 while (!appData.getId().equals(trackId)) {
                     errorIdList.add(appData.getId());
                     System.out.println("error Id: " + appData.getId());
-
+                    logger.info("error app Id: " + appData.getId());
                     i++;
 
                     if (i >= entryList.size()) {
@@ -150,8 +156,10 @@ public class AppInfoController {
         List<List> subAppDataList;
         if (appDataList.size() == 0) {
             System.out.println("get nothing from crawler, function return");
+            logger.info("get nothing from crawler, function return");
             return null;
         } else {
+            logger.info("total app amount" + appDataList.size());
             subAppDataList = Toolkit.splitArray(appDataList, appSize);
             return subAppDataList;
         }
@@ -169,6 +177,7 @@ public class AppInfoController {
             resultAppDataList.addAll(dataList);
         } else {
             System.out.println("jsonObject=null, fetch error");
+            logger.info("jsonObject=null, fetch error");
             return null;
         }
         return resultAppDataList;
@@ -181,6 +190,7 @@ public class AppInfoController {
         List<List> subAppDataList;
         if (appDataList.size() == 0) {
             System.out.println("get nothing from crawler, function return");
+            logger.info("get nothing from crawler, function return");
             return null;
         } else {
             subAppDataList = Toolkit.splitArray(appDataList, appSize);
@@ -287,6 +297,7 @@ public class AppInfoController {
         //split the list of appDataListList again
         List<List<List>> tempList = Toolkit.splitArray(appDataListList, threadsSize);
         System.out.println("threadGroupSize: " + tempList.size());
+        logger.info("threadGroupSize: " + tempList.size());
 
         int threadArrayNum = 1;
         for (List<List> subAppDataListList : tempList) {
@@ -308,6 +319,7 @@ public class AppInfoController {
             System.out.println("thread group " + threadArrayNum + " complete!");
             threadArrayNum++;
         }
+        logger.info("result app size: " + appInfoList.size());
     }
 
     class fetchRunnable implements Runnable {

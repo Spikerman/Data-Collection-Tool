@@ -3,6 +3,9 @@ import Controller.AppInfoController;
 import Controller.DbController;
 import Processor.AppStoreRankingProcessor;
 import Processor.FloatRankPageProcessor;
+import com.sun.tools.javac.util.BasicDiagnosticFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +17,10 @@ import java.util.List;
  */
 public class AppInfoCollector {
 
+    private  Logger logger = LoggerFactory.getLogger(getClass());
+
     public static void main(String args[]) {
+
         FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
         AppInfoController appInfoController = new AppInfoController();
         AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();

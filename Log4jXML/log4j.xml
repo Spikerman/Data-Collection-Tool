@@ -2,20 +2,26 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+	<appender name="mailAppender" class="Utils.DataCrawlerAppender">
+		<param name="SMTPHost" value="smtp.126.com" />
+		<param name="SMTPUsername" value="sei_ch2013@126.com" />
+		<param name="SMTPPassword" value="ch123456" />
+		<param name="From" value="sei_ch2013@126.com" />
+		<param name="To" value="spikechenhao@163.com" />
+		<param name="Subject" value="Testing Log4j mail notification" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%-4r [%t] %-5p %c %x - %m%n" />
 		</layout>
 	</appender>
 
 	<logger name="org.apache" additivity="false">
-		<level value="warn" />
-		<appender-ref ref="stdout" />
+		<level value="info" />
+		<appender-ref ref="mailAppender" />
 	</logger>
 
 	<root>
 		<level value="info" />
-		<appender-ref ref="stdout" />
+		<appender-ref ref="mailAppender" />
 	</root>
 
 </log4j:configuration>
