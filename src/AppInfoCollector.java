@@ -31,9 +31,9 @@ public class AppInfoCollector {
         appInfoController.appendAppDataList(getUpdateAppInfo());
 
         //collect top rank data information through iTunes api
-//        appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo());
+        appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo());
 
-        System.out.println("big list size: " + appInfoController.getAppDataList().size());
+        System.out.println("big list appSize: " + appInfoController.getAppDataList().size());
 
         //fetch app detail information through iTunes api
         appInfoController.startFetch();
@@ -41,7 +41,7 @@ public class AppInfoCollector {
         //get the result list and insert to mysql
         List<AppData> dataList = appInfoController.getAppInfoList();
 
-        System.out.println("big result list size: " + dataList.size());
+        System.out.println("big result list appSize: " + dataList.size());
 
         insertIntoSql(dataList, appInfoController);
 

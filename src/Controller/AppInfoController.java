@@ -23,8 +23,8 @@ public class AppInfoController {
 
     private static final String ITUNES_SEARCH_API =
             "http://itunes.apple.com/cn/lookup?id=%s";
-    public int size = 100;
-
+    public int appSize = 100;
+    public int threadsSize = 20;
     //补足appDataList的完整信息
     private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
@@ -57,7 +57,7 @@ public class AppInfoController {
                 if (jsonObjectIndex < resultCount)
                     trackId = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("trackId").toString();
                 else {
-                    System.out.println("x appDataList size: " + list.size());
+                    System.out.println("x appDataList appSize: " + list.size());
                     return list;
                 }
                 while (!appData.getId().equals(trackId)) {
@@ -67,7 +67,7 @@ public class AppInfoController {
                     i++;
 
                     if (i >= entryList.size()) {
-                        System.out.println("x appDataList size: " + list.size());
+                        System.out.println("x appDataList appSize: " + list.size());
                         return list;
                     } else {
                         appData = entryList.get(i);
@@ -113,7 +113,7 @@ public class AppInfoController {
             e.printStackTrace();
         }
 
-        System.out.println("appDataList size: " + list.size());
+        System.out.println("search app amount: " + list.size());
         return list;
     }
 
@@ -141,8 +141,8 @@ public class AppInfoController {
         appDataList.addAll(entryAppDataList);
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setAppSize(int appSize) {
+        this.appSize = appSize;
     }
 
 
@@ -152,7 +152,7 @@ public class AppInfoController {
             System.out.println("get nothing from crawler, function return");
             return null;
         } else {
-            subAppDataList = Toolkit.splitArray(appDataList, size);
+            subAppDataList = Toolkit.splitArray(appDataList, appSize);
             return subAppDataList;
         }
     }
@@ -183,7 +183,7 @@ public class AppInfoController {
             System.out.println("get nothing from crawler, function return");
             return null;
         } else {
-            subAppDataList = Toolkit.splitArray(appDataList, size);
+            subAppDataList = Toolkit.splitArray(appDataList, appSize);
         }
         System.out.println("start fetch info");
 
@@ -200,7 +200,7 @@ public class AppInfoController {
             }
         }
 
-        System.out.println("total size: " + resultAppDataList.size());
+        System.out.println("fetch result amount: " + resultAppDataList.size());
         return resultAppDataList;
     }
 
@@ -281,26 +281,33 @@ public class AppInfoController {
     }
 
     public void startFetch() {
-        List<List> subAppDataList = getSubAppDataList();
+        //sub app data list includes list
+        List<List> appDataListList = getSubAppDataList();
 
-        Thread[] threads = new Thread[getSubAppDataList().size()];
-        for (int i = 0; i < subAppDataList.size(); i++) {
-            List<AppData> list = getSubAppDataList().get(i);
-            Runnable runnable = new fetchRunnable(list);
-            threads[i] = new Thread(runnable);
-            threads[i].start();
-            System.out.println("Thread " + (i + 1) + " start");
-        }
+        //split the list of appDataListList again
+        List<List<List>> tempList = Toolkit.splitArray(appDataListList, threadsSize);
+        System.out.println("threadGroupSize: " + tempList.size());
 
-        try {
-            for (int i = 0; i < threads.length; i++) {
-                threads[i].join();
+        int threadArrayNum = 1;
+        for (List<List> subAppDataListList : tempList) {
+            Thread[] threads = new Thread[subAppDataListList.size()];
+            for (int i = 0; i < subAppDataListList.size(); i++) {
+                List<AppData> list = subAppDataListList.get(i);
+                Runnable runnable = new fetchRunnable(list);
+                threads[i] = new Thread(runnable);
+                threads[i].start();
+                System.out.println("threads group " + threadArrayNum + ": " + "Thread " + (i + 1) + " start");
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                for (int i = 0; i < threads.length; i++) {
+                    threads[i].join();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("thread group " + threadArrayNum + " complete!");
+            threadArrayNum++;
         }
-
-        System.out.println("all threads complete!");
     }
 
     class fetchRunnable implements Runnable {
