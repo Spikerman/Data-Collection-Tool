@@ -60,7 +60,6 @@ public class AppStoreRankingProcessor {
                 while ((tmp = reader.readLine()) != null) {
                     json.append(tmp).append("\n");
                 }
-
                 reader.close();
                 jsonObject = new JSONObject(json.toString());
 

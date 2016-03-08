@@ -206,6 +206,7 @@ public class AppInfoController {
                 resultAppDataList.addAll(dataList);
             } else {
                 System.out.println("jsonObject=null, fetch error");
+                logger.info("jsonObject=null, fetch error");
                 return null;
             }
         }
@@ -276,6 +277,7 @@ public class AppInfoController {
             return jsonObject;
         } else {
             System.out.println("connect fail!");
+            logger.info("connect fail!");
             return null;
         }
     }
@@ -335,6 +337,7 @@ public class AppInfoController {
                 appInfoList.addAll(temp);
             } else {
                 System.out.println("fetch error");
+                logger.info("fetch error");
                 return;
             }
             System.out.println(appInfoList.size());
