@@ -30,7 +30,7 @@ public class AppInfoController {
     //补足appDataList的完整信息
     private List<AppData> appDataList = new ArrayList<>();
     private List appIdList = new ArrayList<>();
-    private int retryTimes = 10;
+    private int retryTimes = 20;
 
     private List<String> errorIdList = Collections.synchronizedList(new LinkedList<>());
     private List<AppData> appInfoList = Collections.synchronizedList(new LinkedList<>());

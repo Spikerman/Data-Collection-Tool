@@ -21,7 +21,7 @@ public class AppStoreRankingProcessor {
     private static final String TOP_PAID_URL = "https://itunes.apple.com/cn/rss/toppaidapplications/limit=100/json";
     private static final String TOP_FREE_URL = "https://itunes.apple.com/cn/rss/topfreeapplications/limit=100/json";
     private static final String NEW_GAME_URL = "https://itunes.apple.com/cn/rss/newapplications/limit=100/genre=6014/json";
-    private int retryTimes = 5;
+    private int retryTimes = 20;
     private List<AppData> appDataList = new LinkedList<>();
     private List<String> urlList = new LinkedList<>();
 

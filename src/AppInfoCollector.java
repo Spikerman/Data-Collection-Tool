@@ -1,11 +1,13 @@
 import BasicData.AppData;
 import Controller.AppInfoController;
 import Controller.DbController;
+import Downloader.DataDownloader;
+import Pipeline.FloatUpRankPipeline;
 import Processor.AppStoreRankingProcessor;
 import Processor.FloatRankPageProcessor;
-import com.sun.tools.javac.util.BasicDiagnosticFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.codecraft.webmagic.Spider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +19,7 @@ import java.util.List;
  */
 public class AppInfoCollector {
 
-    private  Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String args[]) {
 
@@ -26,12 +28,12 @@ public class AppInfoCollector {
         AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();
 
         //collect flow rank data information through aso100.com by crawler
-//        Spider.create(floatRankPageProcessor)
-//                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
-//                .addPipeline(new FloatUpRankPipeline(appInfoController))
-//                .thread(1)
-//                .setDownloader(new DataDownloader())
-//                .run();
+        Spider.create(floatRankPageProcessor)
+                .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
+                .addPipeline(new FloatUpRankPipeline(appInfoController))
+                .thread(1)
+                .setDownloader(new DataDownloader())
+                .run();
 
         //collect update information from old app data in Database
         appInfoController.appendAppDataList(getUpdateAppInfo());

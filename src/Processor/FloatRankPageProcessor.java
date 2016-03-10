@@ -119,7 +119,7 @@ public class FloatRankPageProcessor implements PageProcessor {
         dbController.insertAppInfoPst.setDouble(8, appData.averageUserRatingForCurrentVersion);
         dbController.insertAppInfoPst.setDouble(9, appData.userRatingCount);
         dbController.insertAppInfoPst.setDouble(10, appData.userRatingCountForCurrentVersion);
-        dbController.insertAppInfoPst.setDate(11, new java.sql.Date(appData.getScrapeTime().getTime()));
+        //dbController.insertAppInfoPst.setDate(11, new java.sql.Date(appData.getScrapeTime().getTime()));
         dbController.insertAppInfoPst.executeUpdate();
 
     }
