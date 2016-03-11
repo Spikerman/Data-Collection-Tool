@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class FloatUpRankPipeline implements Pipeline {
 
-    AppInfoController appInfoController;
+    private AppInfoController appInfoController;
 
     public FloatUpRankPipeline(AppInfoController appInfoController) {
         this.appInfoController = appInfoController;
@@ -29,12 +29,10 @@ public class FloatUpRankPipeline implements Pipeline {
 
     @Override
     public void process(ResultItems resultItems, Task task) {
-
-
         List<AppData> appDataList = resultItems.get("appDataList");
         List<String> appIdList = resultItems.get("appIdList");
-
+        String rankType = resultItems.get("rankType");
         appInfoController.appendAppIdList(appIdList);
-        appInfoController.appendAppDataList(appDataList);
+        appInfoController.appendAppDataList(appDataList, rankType);
     }
 }

@@ -35,7 +35,6 @@ public class DataDownloader extends AbstractDownloader {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
     private List<String> failUrl = new LinkedList<>();
-    private int proxyChangeCount = 5;
     private String proxyIp[] = {
             "localhost"
     };
@@ -81,7 +80,7 @@ public class DataDownloader extends AbstractDownloader {
         } else {
             acceptStatCode = Sets.newHashSet(200);
         }
-        logger.info("downloading page {}", request.getUrl());
+        //logger.info("downloading page {}", request.getUrl());
         CloseableHttpResponse httpResponse = null;
         try {
             int i = 0;

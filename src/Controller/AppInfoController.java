@@ -63,17 +63,16 @@ public class AppInfoController {
                 if (jsonObjectIndex < resultCount)
                     trackId = jsonObject.getJSONArray("results").getJSONObject(jsonObjectIndex).get("trackId").toString();
                 else {
-                    System.out.println("x appDataList appSize: " + list.size());
+                    System.out.println("appDataList appSize: " + list.size());
                     return list;
                 }
                 while (!appData.getId().equals(trackId)) {
                     errorIdList.add(appData.getId());
                     System.out.println("error Id: " + appData.getId());
-                    logger.info("error app Id: " + appData.getId());
                     i++;
 
                     if (i >= entryList.size()) {
-                        System.out.println("x appDataList appSize: " + list.size());
+                        System.out.println("appDataList appSize: " + list.size());
                         return list;
                     } else {
                         appData = entryList.get(i);
@@ -144,6 +143,12 @@ public class AppInfoController {
     }
 
     public void appendAppDataList(List entryAppDataList) {
+        logger.info("app data size: " + entryAppDataList.size());
+        appDataList.addAll(entryAppDataList);
+    }
+
+    public void appendAppDataList(List entryAppDataList, String dataListType) {
+        logger.info(dataListType + " size: " + entryAppDataList.size());
         appDataList.addAll(entryAppDataList);
     }
 
@@ -159,7 +164,7 @@ public class AppInfoController {
             logger.info("get nothing from crawler, function return");
             return null;
         } else {
-            logger.info("total app amount" + appDataList.size());
+            logger.info("total app amount: " + appDataList.size());
             subAppDataList = Toolkit.splitArray(appDataList, appSize);
             return subAppDataList;
         }
@@ -299,7 +304,7 @@ public class AppInfoController {
         //split the list of appDataListList again
         List<List<List>> tempList = Toolkit.splitArray(appDataListList, threadsSize);
         System.out.println("threadGroupSize: " + tempList.size());
-        logger.info("threadGroupSize: " + tempList.size());
+        logger.info("total thread group size: " + tempList.size());
 
         int threadArrayNum = 1;
         for (List<List> subAppDataListList : tempList) {
@@ -321,7 +326,8 @@ public class AppInfoController {
             System.out.println("thread group " + threadArrayNum + " complete!");
             threadArrayNum++;
         }
-        logger.info("result app size: " + appInfoList.size());
+        logger.info("error app amount: " + errorIdList.size());
+        logger.info("result app amount: " + appInfoList.size());
     }
 
     class fetchRunnable implements Runnable {

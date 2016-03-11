@@ -4,6 +4,8 @@ import BasicData.AppData;
 import Controller.AppInfoController;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +26,7 @@ public class AppStoreRankingProcessor {
     private int retryTimes = 20;
     private List<AppData> appDataList = new LinkedList<>();
     private List<String> urlList = new LinkedList<>();
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public AppStoreRankingProcessor() {
         System.out.println("Itunes Search API START");
@@ -78,6 +81,7 @@ public class AppStoreRankingProcessor {
             System.out.println("connect success!");
         } else {
             System.out.println("connect fail!");
+            logger.info("connect fail!");
         }
         return jsonObject;
     }
@@ -119,7 +123,6 @@ public class AppStoreRankingProcessor {
             JSONObject jsonObject = getJSON(url);
             appDataList.addAll(getAppDataList(jsonObject, url));
         }
-
         return appDataList;
     }
 

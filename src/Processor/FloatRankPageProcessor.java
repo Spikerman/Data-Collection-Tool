@@ -48,10 +48,10 @@ public class FloatRankPageProcessor implements PageProcessor {
         urls.add(FLOW_DOWN_FREE_URL);
         urls.add(FLOW_UP_PAID_URL);
         urls.add(FLOW_DOWN_PAID_URL);
-        urls.add(FLOW_UP_PAID_GAME_URL);
-        urls.add(FLOW_DOWN_PAID_GAME_URL);
-        urls.add(FLOW_UP_FREE_GAME_URL);
-        urls.add(FLOW_DOWN_FREE_GAME_URL);
+        //urls.add(FLOW_UP_PAID_GAME_URL);
+        //urls.add(FLOW_DOWN_PAID_GAME_URL);
+        //urls.add(FLOW_UP_FREE_GAME_URL);
+        //urls.add(FLOW_DOWN_FREE_GAME_URL);
 
         System.out.println("Processor.FloatRankPageProcessor Start!");
 
@@ -145,10 +145,26 @@ public class FloatRankPageProcessor implements PageProcessor {
             page.addTargetRequests(urls);
             isFirstPage = false;
         }
+        String url = page.getRequest().getUrl();
+        String type;
+
+        if (url.equals(FLOW_UP_FREE_URL)) {
+            type = AppData.topFreeFlowUp;
+        } else if (url.equals(FLOW_DOWN_FREE_URL)) {
+            type = AppData.topFreeFlowDown;
+        } else if (url.equals(FLOW_UP_PAID_URL)) {
+            type = AppData.topPaidFlowUp;
+        } else if (url.equals(FLOW_DOWN_PAID_URL)) {
+            type = AppData.topPaidFlowDown;
+        } else {
+            type = "unknown";
+            System.out.println("rank type unmatch");
+        }
 
         page.putField("appDataList", appDataList);
         page.putField("appIdList", appIdList);
         page.putField("appSize", size);
+        page.putField("rankType", type);
 
     }
 

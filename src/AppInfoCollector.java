@@ -5,8 +5,6 @@ import Downloader.DataDownloader;
 import Pipeline.FloatUpRankPipeline;
 import Processor.AppStoreRankingProcessor;
 import Processor.FloatRankPageProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Spider;
 
 import java.sql.ResultSet;
@@ -19,10 +17,7 @@ import java.util.List;
  */
 public class AppInfoCollector {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
     public static void main(String args[]) {
-
         FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
         AppInfoController appInfoController = new AppInfoController();
         AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();
@@ -35,11 +30,12 @@ public class AppInfoCollector {
                 .setDownloader(new DataDownloader())
                 .run();
 
-        //collect update information from old app data in Database
-        appInfoController.appendAppDataList(getUpdateAppInfo());
-
         //collect top rank data information through iTunes api
-        appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo());
+        appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo(), "iTunes rank ");
+
+        //collect update information from old app data in Database
+        appInfoController.appendAppDataList(getUpdateAppInfo(), "DB data");
+
 
         System.out.println("big list appSize: " + appInfoController.getAppDataList().size());
 
@@ -116,6 +112,7 @@ public class AppInfoCollector {
             }
 
         }
+
         return appDataList;
     }
 }
