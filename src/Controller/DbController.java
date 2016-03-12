@@ -11,8 +11,8 @@ import java.sql.SQLException;
 public class DbController {
     public static final String url = "jdbc:mysql://127.0.0.1/Data";
     public static final String name = "com.mysql.jdbc.Driver";
-    public static final String user = "root";
-    public static final String password = "root";
+    public static final String user = "Spike";
+    public static final String password = "spike950628";
 
     public static final String insertReviewSql
             = "insert into Review (id,userId,appId,rate,version,date) values(?,?,?,?,?,?)";

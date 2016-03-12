@@ -262,7 +262,8 @@ public class AppInfoController {
                 break;
 
             } catch (IOException e) {
-                System.out.println("network error " + "retry " + (i + 1) + " times");
+                Thread thread=Thread.currentThread();
+                System.out.println(thread+"network error " + "retry " + (i + 1) + " times");
             } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
