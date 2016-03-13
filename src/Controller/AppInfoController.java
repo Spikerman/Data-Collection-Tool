@@ -147,9 +147,15 @@ public class AppInfoController {
         appDataList.addAll(entryAppDataList);
     }
 
-    public void appendAppDataList(List entryAppDataList, String dataListType) {
-        logger.info(dataListType + " size: " + entryAppDataList.size());
-        appDataList.addAll(entryAppDataList);
+    public boolean appendAppDataList(List entryAppDataList, String dataListType) {
+        if (entryAppDataList.size() == 0) {
+            logger.info(dataListType + " fetch fail");
+            return false;
+        } else {
+            logger.info(dataListType + " size: " + entryAppDataList.size());
+            appDataList.addAll(entryAppDataList);
+            return true;
+        }
     }
 
     public void setAppSize(int appSize) {
@@ -262,8 +268,8 @@ public class AppInfoController {
                 break;
 
             } catch (IOException e) {
-                Thread thread=Thread.currentThread();
-                System.out.println(thread+"network error " + "retry " + (i + 1) + " times");
+                Thread thread = Thread.currentThread();
+                System.out.println(thread + "network error " + "retry " + (i + 1) + " times");
             } catch (JSONException e) {
                 e.printStackTrace();
             } finally {

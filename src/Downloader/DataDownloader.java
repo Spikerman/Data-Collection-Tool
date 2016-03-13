@@ -42,6 +42,15 @@ public class DataDownloader extends AbstractDownloader {
             0
     };
 
+    private String userAgents[] = {
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/601.4.4 (KHTML, like Gecko) Version/9.0.3 Safari/601.4.4",
+            "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17",
+            "Mozilla/5.0 (Windows NT 6.1; rv:17.0) Gecko/20100101 Firefox/17.0",
+            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
+            "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.388 Version/12.16"
+    };
+
     public List<String> getFailUrls() {
         return failUrl;
     }
@@ -75,6 +84,7 @@ public class DataDownloader extends AbstractDownloader {
         Map<String, String> headers = null;
         if (site != null) {
             acceptStatCode = site.getAcceptStatCode();
+            site.setUserAgent(getUserAgent());
             charset = site.getCharset();
             headers = site.getHeaders();
         } else {
@@ -197,12 +207,20 @@ public class DataDownloader extends AbstractDownloader {
 
     protected HttpHost getHttpHost() {
         int size = proxyIp.length;
-        Random x=new Random();
+        Random x = new Random();
         int index = x.nextInt(size);
         System.out.println("Use proxy" + " ip: " + proxyIp[index] + " port: " + proxyPort[index]);
         if (proxyPort[index] == 0)
             return null;
         else
             return new HttpHost(proxyIp[index], proxyPort[index], "Http");
+    }
+
+    private String getUserAgent() {
+        int size = userAgents.length;
+        Random x = new Random();
+        int index = x.nextInt(size);
+        System.out.println("User Agent: " + userAgents[index]);
+        return userAgents[index];
     }
 }

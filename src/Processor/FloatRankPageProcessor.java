@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,7 @@ public class FloatRankPageProcessor implements PageProcessor {
 
     private boolean isFirstPage = true;
 
+
     public FloatRankPageProcessor() {
         urls.add(FLOW_DOWN_FREE_URL);
         urls.add(FLOW_UP_PAID_URL);
@@ -52,7 +54,6 @@ public class FloatRankPageProcessor implements PageProcessor {
         //urls.add(FLOW_DOWN_PAID_GAME_URL);
         //urls.add(FLOW_UP_FREE_GAME_URL);
         //urls.add(FLOW_DOWN_FREE_GAME_URL);
-
         System.out.println("Processor.FloatRankPageProcessor Start!");
 
     }
@@ -69,43 +70,43 @@ public class FloatRankPageProcessor implements PageProcessor {
                 .setDownloader(new DataDownloader())
                 .run();
 
-        dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-        appInfoController.startFetch();
-        List<AppData> dataList = appInfoController.getAppInfoList();
-
-        if (dataList != null) {
-            for (AppData appData : dataList) {
-                int i = 1;
-                System.out.println(i + appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
-                        + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + " " + appData.getScrapeTime());
-                try {
-                    insertAppInfo(appData, dbController);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                i++;
-            }
-        } else {
-            System.out.println("fetch error, system end");
-            return;
-        }
-
-        List<String> errorIdList = new LinkedList<>();
-        errorIdList.addAll(appInfoController.getErrorIdList());
-
-        dbController.setInsertUnavailableAppSqlPst(DbController.insertUnavailableAppSql);
-        if (errorIdList.size() != 0) {
-            for (String id : errorIdList) {
-                try {
-                    dbController.insertUnavailableAppPst.setString(1, id);
-                    dbController.insertUnavailableAppPst.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            System.out.println("no unavailable app");
-        }
+//        dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
+//        appInfoController.startFetch();
+//        List<AppData> dataList = appInfoController.getAppInfoList();
+//
+//        if (dataList != null) {
+//            for (AppData appData : dataList) {
+//                int i = 1;
+//                System.out.println(i + appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+//                        + appData.userRatingCountForCurrentVersion + "  " + appData.getUserRatingCount() + " " + appData.getScrapeTime());
+//                try {
+//                    insertAppInfo(appData, dbController);
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
+//                i++;
+//            }
+//        } else {
+//            System.out.println("fetch error, system end");
+//            return;
+//        }
+//
+//        List<String> errorIdList = new LinkedList<>();
+//        errorIdList.addAll(appInfoController.getErrorIdList());
+//
+//        dbController.setInsertUnavailableAppSqlPst(DbController.insertUnavailableAppSql);
+//        if (errorIdList.size() != 0) {
+//            for (String id : errorIdList) {
+//                try {
+//                    dbController.insertUnavailableAppPst.setString(1, id);
+//                    dbController.insertUnavailableAppPst.executeUpdate();
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        } else {
+//            System.out.println("no unavailable app");
+//        }
     }
 
     public static void insertAppInfo(AppData appData, DbController dbController) throws SQLException {
@@ -158,7 +159,7 @@ public class FloatRankPageProcessor implements PageProcessor {
             type = AppData.topPaidFlowDown;
         } else {
             type = "unknown";
-            System.out.println("rank type unmatch");
+            System.out.println("rank type NOT match");
         }
 
         page.putField("appDataList", appDataList);
@@ -228,4 +229,6 @@ public class FloatRankPageProcessor implements PageProcessor {
 
         return new AppData(appId, rankNum, rankFloatNum, type);
     }
+
+
 }

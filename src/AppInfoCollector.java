@@ -22,13 +22,17 @@ public class AppInfoCollector {
         AppInfoController appInfoController = new AppInfoController();
         AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();
 
-        //collect flow rank data information through aso100.com by crawler
+        //collect floating rank data information through aso100.com by crawler
         Spider.create(floatRankPageProcessor)
                 .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(new DataDownloader())
                 .run();
+
+        //check if crawler fetch all data successfully, if NOT, system return
+        if (!checkIntegrity(appInfoController))
+            return;
 
         //collect top rank data information through iTunes api
         appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo(), "iTunes rank ");
@@ -115,4 +119,13 @@ public class AppInfoCollector {
 
         return appDataList;
     }
+
+    public static boolean checkIntegrity(AppInfoController appInfoController) {
+        if (appInfoController.getAppDataList().size() != 800) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }
