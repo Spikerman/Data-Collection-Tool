@@ -2,6 +2,7 @@ package Processor;
 
 import BasicData.AppData;
 import Controller.AppInfoController;
+import Controller.DbController;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,12 +38,55 @@ public class AppStoreRankingProcessor {
         urlList.add(NEW_GAME_URL);
     }
 
+    public static void insertIntoSql(List<AppData> dataList, AppInfoController appInfoController) {
+        DbController dbController = new DbController();
+
+        dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
+        dbController.setInsertUnavailableAppSqlPst(DbController.insertUnavailableAppSql);
+
+        if (dataList != null) {
+            int i = 1;
+
+            for (AppData appData : dataList) {
+                System.out.println(i + "  " + appData.ranking + "  " + appData.rankFloatNum + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
+                        + appData.userRatingCountForCurrentVersion + " " + appData.getScrapeTime());
+                try {
+                    FloatRankPageProcessor.insertAppInfo(appData, dbController);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                i++;
+            }
+        } else {
+            System.out.println("fetch error, system end");
+            return;
+        }
+
+        List<String> errorIdList = new LinkedList<>();
+        errorIdList.addAll(appInfoController.getErrorIdList());
+
+        if (errorIdList.size() != 0) {
+            for (String id : errorIdList) {
+                try {
+                    dbController.insertUnavailableAppPst.setString(1, id);
+                    dbController.insertUnavailableAppPst.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            System.out.println("no unavailable app");
+        }
+    }
+
     public static void main(String args[]) {
         AppInfoController appInfoController = new AppInfoController();
         AppStoreRankingProcessor appStoreRankingProcessor = new AppStoreRankingProcessor();
-        appStoreRankingProcessor.fetchRankAppInfo();
-        appInfoController.appendAppDataList(appStoreRankingProcessor.getAppDataList());
-        appInfoController.fetchAppDetailInfo();
+        appInfoController.appendAppDataList(appStoreRankingProcessor.fetchRankAppInfo(), "iTunes rank ");
+        appInfoController.startFetch();
+        List<AppData> dataList = appInfoController.getAppInfoList();
+        insertIntoSql(dataList, appInfoController);
+
     }
 
     private JSONObject getJSON(String urlString) {
@@ -129,4 +174,6 @@ public class AppStoreRankingProcessor {
     public List<AppData> getAppDataList() {
         return appDataList;
     }
+
+
 }
