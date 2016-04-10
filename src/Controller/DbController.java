@@ -11,8 +11,8 @@ import java.sql.SQLException;
 public class DbController {
     public static final String url = "jdbc:mysql://localhost/Data";
     public static final String name = "com.mysql.jdbc.Driver";
-    public static final String user = "";
-    public static final String password = "";
+    public static final String user = "root";
+    public static final String password = "root";
 
     public static final String insertReviewSql
             = "insert into Review (id,userId,appId,rate,version,date) values(?,?,?,?,?,?)";
@@ -29,12 +29,15 @@ public class DbController {
     public static final String selectAppIdSql
             = "select distinct appId from AppInfo";
 
+    public static final String selectGroupAppSql = "SELECT groupId,appId FROM Data.AppGroup";
+
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
     public PreparedStatement insertAppInfoPst = null;
     public PreparedStatement insertAuthorPst = null;
     public PreparedStatement insertUnavailableAppPst = null;
     public PreparedStatement selectAppIdPst = null;
+    public PreparedStatement selectGroupAppPst = null;
 
 
     public DbController() {
@@ -94,6 +97,14 @@ public class DbController {
     public void setSelectAppIdPst(String sql) {
         try {
             selectAppIdPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setSelectGroupAppSqlPst(String sql) {
+        try {
+            selectGroupAppPst = connection.prepareStatement(sql);
         } catch (Exception e) {
             e.printStackTrace();
         }

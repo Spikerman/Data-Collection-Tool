@@ -7,10 +7,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -182,7 +179,7 @@ public class AppInfoController {
 
         JSONObject jsonObject = getJSON(dataList);
         List<AppData> resultAppDataList = new LinkedList<>();
-
+        
         if (jsonObject != null) {
             dataList = addAppDataInfo(dataList, jsonObject);
             resultAppDataList.addAll(dataList);
@@ -192,6 +189,8 @@ public class AppInfoController {
             return null;
         }
         return resultAppDataList;
+
+
     }
 
     //acquire all app info according to app id, and return the app data list,
@@ -221,7 +220,6 @@ public class AppInfoController {
                 return null;
             }
         }
-
         System.out.println("fetch result amount: " + resultAppDataList.size());
         return resultAppDataList;
     }
