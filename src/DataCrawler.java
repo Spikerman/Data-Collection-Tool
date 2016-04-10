@@ -38,7 +38,7 @@ public class DataCrawler {
 //                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
 //                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
 //                .thread(1)
-//                .setDownloader(dataDownloader)
+//                .setDownloader(reviewDataDownloader)
 //                .run();
 
         Spider.create(floatRankPageProcessor)
@@ -70,7 +70,7 @@ public class DataCrawler {
 //        Spider.create(proxyProcessor)
 //                .addUrl(proxyProcessor.INITIAL_URL)
 //                .thread(3)
-//                .setDownloader(dataDownloader)
+//                .setDownloader(reviewDataDownloader)
 //                .run();
 
 
@@ -80,7 +80,6 @@ public class DataCrawler {
 
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
-            reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());
 
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)
@@ -119,7 +118,6 @@ public class DataCrawler {
         dbController.insertReviewPst.setDate(6, new java.sql.Date(review.getDate().getTime()));
         dbController.insertReviewPst.executeUpdate();
 
-
     }
 
     public static void insertAuthor(Review review, DbController dbController) throws SQLException {
@@ -147,7 +145,7 @@ public class DataCrawler {
 //                .addUrl(AppStoreRankProcessor.FLOW_UP_FREE_URL)
 //                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
 //                .thread(1)
-//                .setDownloader(dataDownloader)
+//                .setDownloader(reviewDataDownloader)
 //                .run();
 
         Spider.create(floatRankPageProcessor)
@@ -190,7 +188,6 @@ public class DataCrawler {
 
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
-            reviewPageProcessor.setProxyList(proxyProcessor.getProxyList());
 
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)

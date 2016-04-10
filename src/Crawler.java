@@ -1,28 +1,33 @@
+import BasicData.Review;
 import Controller.DbController;
+import Downloader.ReviewDataDownLoader;
+import Processor.ReviewPageProcessor;
+import us.codecraft.webmagic.Spider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by chenhao on 4/10/16.
  */
 public class Crawler {
     public Map<Integer, Set<String>> appGroupMap = new HashMap<>();
+    public ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
     private DbController dbController = new DbController();
 
     public Crawler() {
         dbController.setSelectGroupAppSqlPst(DbController.selectGroupAppSql);
+        dbController.setInsertAuthorPst(DbController.insertAuthorSql);
+        dbController.setInsertReviewPst(DbController.insertReviewSql);
     }
 
     public static void main(String args[]) {
         Crawler crawler = new Crawler();
         crawler.buildAppGroupMap();
-        System.out.println("end");
+        crawler.startFetch();
     }
+
 
     public void buildAppGroupMap() {
         ResultSet resultSet = null;
@@ -57,5 +62,58 @@ public class Crawler {
         }
     }
 
+    private void fetchReviewData(int groupId, String appId) {
+        ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor(appId);
+        Spider.create(reviewPageProcessor)
+                .addUrl(ReviewPageProcessor.INITIAL_URL)
+                .thread(5)
+                .setDownloader(reviewDataDownloader)
+                .run();
+        Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
+        for (Review review : reviewSet) {
+            try {
+                insertReview(review, dbController);
+            } catch (SQLException e) {
+                System.out.println("duplicate one, skip it");
+            }
+            try {
+                insertAuthor(groupId, review, dbController);
+            } catch (SQLException e) {
+                System.out.println("duplicate one, skip it");
+            }
 
+        }
+    }
+
+    public void startFetch() {
+        Iterator mapIterator = appGroupMap.entrySet().iterator();
+        while (mapIterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) mapIterator.next();
+            int groupId = (int) entry.getKey();
+            Set<String> appIdSet = (Set) entry.getValue();
+            Iterator setIterator = appIdSet.iterator();
+            while (setIterator.hasNext()) {
+                String appId = (String) setIterator.next();
+                fetchReviewData(groupId, appId);
+            }
+        }
+    }
+
+    public void insertReview(Review review, DbController dbController) throws SQLException {
+        dbController.insertReviewPst.setString(1, review.getId());
+        dbController.insertReviewPst.setString(2, review.getAuthorId());
+        dbController.insertReviewPst.setString(3, review.getAppId());
+        dbController.insertReviewPst.setDouble(4, review.getRate());
+        dbController.insertReviewPst.setString(5, review.getVersion());
+        dbController.insertReviewPst.setDate(6, new java.sql.Date(review.getDate().getTime()));
+        dbController.insertReviewPst.executeUpdate();
+    }
+
+    public void insertAuthor(int groupId, Review review, DbController dbController) throws SQLException {
+        dbController.insertAuthorPst.setString(1, review.getAuthorId());
+        dbController.insertAuthorPst.setString(2, review.getAppId());
+        dbController.insertAuthorPst.setInt(3, groupId);
+        dbController.insertAuthorPst.setString(4, review.getId());
+        dbController.insertAuthorPst.executeUpdate();
+    }
 }

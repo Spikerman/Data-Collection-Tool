@@ -2,7 +2,6 @@ package Downloader;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.CookieSpecs;
@@ -25,35 +24,17 @@ import us.codecraft.webmagic.utils.HttpConstant;
 import us.codecraft.webmagic.utils.UrlUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Created by chenhao on 2/25/16.
+ * Created by chenhao on 4/10/16.
  */
-public class DataDownloader extends AbstractDownloader {
+public class ReviewDataDownLoader extends AbstractDownloader {
     private final Map<String, CloseableHttpClient> httpClients = new HashMap<String, CloseableHttpClient>();
     private Logger logger = LoggerFactory.getLogger(getClass());
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
-    private List<String> failUrl = new LinkedList<>();
-    private String proxyIp[] = {
-            "localhost"
-    };
-    private int proxyPort[] = {
-            0
-    };
-
-    private String userAgents[] = {
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/601.4.4 (KHTML, like Gecko) Version/9.0.3 Safari/601.4.4",
-            "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17",
-            "Mozilla/5.0 (Windows NT 6.1; rv:17.0) Gecko/20100101 Firefox/17.0",
-            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
-            "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.388 Version/12.16"
-    };
-
-    public List<String> getFailUrls() {
-        return failUrl;
-    }
 
     private CloseableHttpClient getHttpClient(Site site) {
         if (site == null) {
@@ -84,21 +65,14 @@ public class DataDownloader extends AbstractDownloader {
         Map<String, String> headers = null;
         if (site != null) {
             acceptStatCode = site.getAcceptStatCode();
-            site.setUserAgent(getUserAgent());
             charset = site.getCharset();
             headers = site.getHeaders();
         } else {
             acceptStatCode = Sets.newHashSet(200);
         }
-        //logger.info("downloading page {}", request.getUrl());
-        //System.out.println("downloading page {} " + request.getUrl());
+        logger.info("downloading page {}", request.getUrl());
         CloseableHttpResponse httpResponse = null;
         try {
-            int i = 0;
-            HttpHost httpHost = getHttpHost();
-            if (httpHost != null) {
-                site.setHttpProxy(httpHost);
-            }
             HttpUriRequest httpUriRequest = getHttpUriRequest(request, site, headers);
             CloseableHttpClient httpClient = getHttpClient(site);
             httpResponse = httpClient.execute(httpUriRequest);
@@ -118,7 +92,6 @@ public class DataDownloader extends AbstractDownloader {
                     return addToCycleRetry(request, site);
                 } else {
                     logger.info(request.getUrl() + " has been added to the failUrlList");
-                    failUrl.add(request.getUrl());
                     logger.info("add to cycle retry");
                     return addToCycleRetry(request, site);
                 }
@@ -205,22 +178,5 @@ public class DataDownloader extends AbstractDownloader {
         return page;
     }
 
-    protected HttpHost getHttpHost() {
-        int size = proxyIp.length;
-        Random x = new Random();
-        int index = x.nextInt(size);
-        System.out.println("Use proxy" + " ip: " + proxyIp[index] + " port: " + proxyPort[index]);
-        if (proxyPort[index] == 0)
-            return null;
-        else
-            return new HttpHost(proxyIp[index], proxyPort[index], "Http");
-    }
 
-    private String getUserAgent() {
-        int size = userAgents.length;
-        Random x = new Random();
-        int index = x.nextInt(size);
-        System.out.println("User Agent: " + userAgents[index]);
-        return userAgents[index];
-    }
 }

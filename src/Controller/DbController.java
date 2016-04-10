@@ -21,7 +21,7 @@ public class DbController {
             + "values(?,?,?,?,?,?,?,?,?,?)";
 
     public static final String insertAuthorSql
-            = "insert into Author (userId,appId) values(?,?)";
+            = "insert into Author (userId,appId,groupId,reviewId) values(?,?,?,?)";
 
     public static final String insertUnavailableAppSql
             = "insert into UnavailableApp (appId) values (?)";
