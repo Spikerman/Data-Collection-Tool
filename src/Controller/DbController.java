@@ -31,6 +31,8 @@ public class DbController {
 
     public static final String selectGroupAppSql = "SELECT groupId,appId FROM Data.AppGroup";
 
+    public static final String selectUnavailableAppSql = "SELECT * FROM Data.UnavailableApp";
+
     public Connection connection = null;
     public PreparedStatement insertReviewPst = null;
     public PreparedStatement insertAppInfoPst = null;
@@ -38,6 +40,7 @@ public class DbController {
     public PreparedStatement insertUnavailableAppPst = null;
     public PreparedStatement selectAppIdPst = null;
     public PreparedStatement selectGroupAppPst = null;
+    public PreparedStatement selectUnavailableAppPst = null;
 
 
     public DbController() {
@@ -105,6 +108,14 @@ public class DbController {
     public void setSelectGroupAppSqlPst(String sql) {
         try {
             selectGroupAppPst = connection.prepareStatement(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setSelectUnavailableAppPst(String sql) {
+        try {
+            selectUnavailableAppPst = connection.prepareStatement(sql);
         } catch (Exception e) {
             e.printStackTrace();
         }

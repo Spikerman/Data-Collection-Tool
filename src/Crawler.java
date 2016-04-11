@@ -15,16 +15,20 @@ public class Crawler {
     public Map<Integer, Set<String>> appGroupMap = new HashMap<>();
     public ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
     private DbController dbController = new DbController();
+    private Set<String> unavailableAppSet = new HashSet<>();
 
     public Crawler() {
         dbController.setSelectGroupAppSqlPst(DbController.selectGroupAppSql);
         dbController.setInsertAuthorPst(DbController.insertAuthorSql);
         dbController.setInsertReviewPst(DbController.insertReviewSql);
+        dbController.setSelectUnavailableAppPst(DbController.selectUnavailableAppSql);
     }
 
     public static void main(String args[]) {
         Crawler crawler = new Crawler();
+        crawler.getUnavailableApp();
         crawler.buildAppGroupMap();
+        crawler.filterDropApp();
         crawler.startFetch();
     }
 
@@ -45,6 +49,40 @@ public class Crawler {
                     groupId = resultSet.getInt("groupId");
                     appId = resultSet.getString("appId");
                     insertToMap(groupId, appId);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //将存储在hashmap中的各组app group中,已经下架的APP去除
+    public void filterDropApp() {
+        for (Map.Entry<Integer, Set<String>> entry : appGroupMap.entrySet()) {
+            int count;
+            Set appSet = entry.getValue();
+            count = appSet.size();
+            appSet.removeAll(unavailableAppSet);
+            count = count - appSet.size();
+            //System.out.println(entry.getKey() + " " + count);
+        }
+    }
+
+
+    public void getUnavailableApp() {
+        ResultSet resultSet = null;
+        String appId;
+        try {
+            resultSet = dbController.selectUnavailableAppPst.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (resultSet != null) {
+            try {
+                while (resultSet.next()) {
+                    appId = resultSet.getString("appId");
+                    unavailableAppSet.add(appId);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

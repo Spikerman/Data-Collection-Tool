@@ -31,6 +31,7 @@
     <SOURCES>
       <root url="jar://$USER_HOME$/.ideaLibSources/gson-2.5-sources.jar!/" />
       <root url="jar://$USER_HOME$/.ideaLibSources/json-smart-1.1.1-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/log4j-1.2.17-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

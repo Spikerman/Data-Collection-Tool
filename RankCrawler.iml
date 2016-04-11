@@ -20,6 +20,7 @@
           <root url="jar://$USER_HOME$/.ideaLibSources/httpcore-4.3.2-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ideaLibSources/httpclient-4.3.3-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ideaLibSources/guava-15.0-sources.jar!/" />
+          <root url="jar://$USER_HOME$/.ideaLibSources/log4j-1.2.17-sources.jar!/" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
