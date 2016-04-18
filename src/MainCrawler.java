@@ -11,13 +11,13 @@ import java.util.*;
 /**
  * Created by chenhao on 4/10/16.
  */
-public class Crawler {
+public class MainCrawler {
     public Map<Integer, Set<String>> appGroupMap = new HashMap<>();
     public ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
     private DbController dbController = new DbController();
     private Set<String> unavailableAppSet = new HashSet<>();
 
-    public Crawler() {
+    public MainCrawler() {
         dbController.setSelectGroupAppSqlPst(DbController.selectGroupAppSql);
         dbController.setInsertAuthorPst(DbController.insertAuthorSql);
         dbController.setInsertReviewPst(DbController.insertReviewSql);
@@ -25,11 +25,11 @@ public class Crawler {
     }
 
     public static void main(String args[]) {
-        Crawler crawler = new Crawler();
-        crawler.getUnavailableApp();
-        crawler.buildAppGroupMap();
-        crawler.filterDropApp();
-        crawler.startFetch();
+        MainCrawler mainCrawler = new MainCrawler();
+        mainCrawler.getUnavailableApp();
+        mainCrawler.buildAppGroupMap();
+        mainCrawler.filterRemovedApp();
+        mainCrawler.startFetch();
     }
 
 
@@ -57,14 +57,22 @@ public class Crawler {
     }
 
     //将存储在hashmap中的各组app group中,已经下架的APP去除
-    public void filterDropApp() {
+    public void filterRemovedApp() {
         for (Map.Entry<Integer, Set<String>> entry : appGroupMap.entrySet()) {
             int count;
-            Set appSet = entry.getValue();
+            Set<String> appSet = entry.getValue();
             count = appSet.size();
-            appSet.removeAll(unavailableAppSet);
+            //appSet.removeAll(unavailableAppSet);
+            Set<String> tempSet = new HashSet<>();
+            for (String id : appSet) {
+                if (unavailableAppSet.contains(id)) {
+                    System.out.println("unavailable App id : "+id);
+                    tempSet.add(id);
+                }
+            }
+            appSet.removeAll(tempSet);
             count = count - appSet.size();
-            //System.out.println(entry.getKey() + " " + count);
+            System.out.println(entry.getKey() + " " + count);
         }
     }
 
@@ -102,12 +110,15 @@ public class Crawler {
 
     private void fetchReviewData(int groupId, String appId) {
         ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor(appId);
+
         Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
                 .thread(5)
                 .setDownloader(reviewDataDownloader)
                 .run();
+
         Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
+
         for (Review review : reviewSet) {
             try {
                 insertReview(review, dbController);

@@ -31,14 +31,13 @@ public class ReviewPageProcessor implements PageProcessor {
     public List<String> pageUrls;
     public Set<Review> reviewSet = Collections.synchronizedSet(new HashSet<>());
     //keep thread-safe
-    public Site site = Site.me().setCycleRetryTimes(10).setSleepTime(3000).setTimeOut(150000)
+    public Site site = Site.me().setCycleRetryTimes(20).setSleepTime(2000).setTimeOut(150000)
             .setCharset("utf-8")
             .setUserAgent("iTunes/12.2.1 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/601.4.4")
             .addHeader("X-Apple-Store-Front", "143465,12")
             .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
 
     private String id;
-    private int groupId;
 
     private int pageCount;
     private Elements pageNumbers;
@@ -71,27 +70,26 @@ public class ReviewPageProcessor implements PageProcessor {
         String sql = "insert into BasicData.Review (id,appId,rate,version,date) values(?,?,?,?,?)";
         DbController dbHelper = new DbController();
         dbHelper.setInsertReviewPst(sql);
-        ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("685872176");
+        ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor("1067721155");
         Spider.create(reviewPageProcessor)
                 .addUrl(ReviewPageProcessor.INITIAL_URL)
-                .addPipeline(new ReviewPagePipeline())
-                .thread(10)
+                .thread(5)
                 .setDownloader(new ReviewDataDownLoader())
                 .run();
 
-        Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
-        for (Review review : reviewSet) {
-            try {
-                dbHelper.insertReviewPst.setString(1, review.getId());
-                dbHelper.insertReviewPst.setString(2, review.getAppId());
-                dbHelper.insertReviewPst.setDouble(3, review.getRate());
-                dbHelper.insertReviewPst.setString(4, review.getVersion());
-                dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
-                dbHelper.insertReviewPst.executeUpdate();
-            } catch (Exception e) {
-                //e.printStackTrace();
-            }
-        }
+//        Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
+//        for (Review review : reviewSet) {
+//            try {
+//                dbHelper.insertReviewPst.setString(1, review.getId());
+//                dbHelper.insertReviewPst.setString(2, review.getAppId());
+//                dbHelper.insertReviewPst.setDouble(3, review.getRate());
+//                dbHelper.insertReviewPst.setString(4, review.getVersion());
+//                dbHelper.insertReviewPst.setDate(5, new java.sql.Date(review.getDate().getTime()));
+//                dbHelper.insertReviewPst.executeUpdate();
+//            } catch (Exception e) {
+//                //e.printStackTrace();
+//            }
+//        }
     }
 
     public void setProxy(Proxy proxy) {
