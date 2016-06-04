@@ -2,6 +2,8 @@ import BasicData.Review;
 import Controller.DbController;
 import Downloader.ReviewDataDownLoader;
 import Processor.ReviewPageProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Spider;
 
 import java.sql.ResultSet;
@@ -16,9 +18,10 @@ public class MainCrawler {
     public ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
     private DbController dbController = new DbController();
     private Set<String> unavailableAppSet = new HashSet<>();
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public MainCrawler() {
-        dbController.setSelectGroupAppSqlPst(DbController.selectGroupAppSql);
+        dbController.setSelectCandidateClusterSqlPst(DbController.selectCandidateCluster);
         dbController.setInsertAuthorPst(DbController.insertAuthorSql);
         dbController.setInsertReviewPst(DbController.insertReviewSql);
         dbController.setSelectUnavailableAppPst(DbController.selectUnavailableAppSql);
@@ -27,18 +30,19 @@ public class MainCrawler {
     public static void main(String args[]) {
         MainCrawler mainCrawler = new MainCrawler();
         mainCrawler.getUnavailableApp();
-        mainCrawler.buildAppGroupMap();
+        mainCrawler.buildCandidateClusterMap();
         mainCrawler.filterRemovedApp();
-        mainCrawler.startFetch();
+
+        //mainCrawler.startFetch();
     }
 
 
-    public void buildAppGroupMap() {
+    public void buildCandidateClusterMap() {
         ResultSet resultSet = null;
         String appId;
-        int groupId;
+        int clusterId;
         try {
-            resultSet = dbController.selectGroupAppPst.executeQuery();
+            resultSet = dbController.selectCandidateClusterPst.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,9 +50,9 @@ public class MainCrawler {
         if (resultSet != null) {
             try {
                 while (resultSet.next()) {
-                    groupId = resultSet.getInt("groupId");
+                    clusterId = resultSet.getInt("clusterId");
                     appId = resultSet.getString("appId");
-                    insertToMap(groupId, appId);
+                    insertToMap(clusterId, appId);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -66,7 +70,7 @@ public class MainCrawler {
             Set<String> tempSet = new HashSet<>();
             for (String id : appSet) {
                 if (unavailableAppSet.contains(id)) {
-                    System.out.println("unavailable App id : "+id);
+                    System.out.println("unavailable App id : " + id);
                     tempSet.add(id);
                 }
             }
@@ -108,7 +112,7 @@ public class MainCrawler {
         }
     }
 
-    private void fetchReviewData(int groupId, String appId) {
+    private void fetchAppReviewData(int cluster, String appId) {
         ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor(appId);
 
         Spider.create(reviewPageProcessor)
@@ -126,7 +130,7 @@ public class MainCrawler {
                 System.out.println("duplicate one, skip it");
             }
             try {
-                insertAuthor(groupId, review, dbController);
+                insertAuthor(cluster, review, dbController);
             } catch (SQLException e) {
                 System.out.println("duplicate one, skip it");
             }
@@ -138,13 +142,17 @@ public class MainCrawler {
         Iterator mapIterator = appGroupMap.entrySet().iterator();
         while (mapIterator.hasNext()) {
             Map.Entry entry = (Map.Entry) mapIterator.next();
-            int groupId = (int) entry.getKey();
+            int clusterId = (int) entry.getKey();
             Set<String> appIdSet = (Set) entry.getValue();
+            int count = 0;
             Iterator setIterator = appIdSet.iterator();
             while (setIterator.hasNext()) {
+                count++;
                 String appId = (String) setIterator.next();
-                fetchReviewData(groupId, appId);
+                fetchAppReviewData(clusterId, appId);
+                logger.info("cluster ", clusterId, " has finished ", count, " apps and remains ", appIdSet.size() - count, " apps");
             }
+            logger.info("group ", clusterId, " has finished");
         }
     }
 

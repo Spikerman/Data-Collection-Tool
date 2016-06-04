@@ -4,7 +4,6 @@ import BasicData.Proxy;
 import BasicData.Review;
 import Controller.DbController;
 import Downloader.ReviewDataDownLoader;
-import Pipeline.ReviewPagePipeline;
 import Utils.Toolkit;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

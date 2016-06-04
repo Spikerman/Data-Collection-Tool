@@ -70,7 +70,8 @@ public class ReviewDataDownLoader extends AbstractDownloader {
         } else {
             acceptStatCode = Sets.newHashSet(200);
         }
-        logger.info("downloading page {}", request.getUrl());
+        //logger.info("downloading page {}", request.getUrl());
+        System.out.println("downloading page {}" + request.getUrl());
         CloseableHttpResponse httpResponse = null;
         try {
             HttpUriRequest httpUriRequest = getHttpUriRequest(request, site, headers);
