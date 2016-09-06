@@ -7,45 +7,35 @@ import us.codecraft.webmagic.processor.PageProcessor;
 
 public class GithubRepoPageProcessor implements PageProcessor {
 
+    public static String reviewPagelink = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/customerReviews?displayable-kind=11&id=368677368&page=1&sort=4";
+    public static String userPagelink = "https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewUsersUserReviews?userProfileId=481939717";
+
     // 部分一：抓取网站的相关配置，包括编码、抓取间隔、重试次数等
-    private Site site = Site.me().setRetryTimes(3).setSleepTime(1000);
+    public Site site = Site.me().setCycleRetryTimes(20).setSleepTime(2000).setTimeOut(150000)
+            .setCharset("utf-8")
+            .setUserAgent("iTunes/12.2.1 (Macintosh; Intel Mac OS X 10.11.3) AppleWebKit/601.4.4")
+            .addHeader("X-Apple-Store-Front", "143465,12")
+            .addHeader("Accept-Language", "en-us, en, zh; q=0.50");
+
+    public static void main(String[] args) {
+        Spider.create(new GithubRepoPageProcessor())
+                //从"https://github.com/code4craft"开始抓
+                .addUrl(userPagelink)
+                //开启1个线程抓取
+                .thread(1)
+                //启动爬虫
+                .run();
+    }
 
     @Override
     // process是定制爬虫逻辑的核心接口，在这里编写抽取逻辑
 
     public void process(Page page) {
-        // 部分二：定义如何抽取页面信息，并保存下来
-        page.putField("author", page.getUrl().regex("https://github\\.com/(\\w+)/.*").toString());
-        System.out.println(page.getUrl().regex("https://github\\.com/(\\w+)/.*").toString());
-
-        page.putField("name", page.getHtml().xpath("//h1[@class='entry-title public']/strong/a/text()").toString());
-        //System.out.println(page.getHtml().xpath("//h1[@class='entry-title public']/strong/a/text()").toString());
-
-        if (page.getResultItems().get("name") == null) {
-            //skip this page
-            page.setSkip(true);
-        }
-
-        page.putField("readme", page.getHtml().xpath("//div[@id='readme']/tidyText()"));
-        System.out.println(page.getHtml().xpath("//div[@id='readme']/tidyText()"));
-
-        // 部分三：从页面发现后续的url地址来抓取
-        //page.addTargetRequests(page.getHtml().links().regex("(https://github\\.com/\\w+/\\w+)").all());
+        System.out.println(page.getHtml());
     }
 
     @Override
     public Site getSite() {
         return site;
-    }
-
-    public static void main(String[] args) {
-
-        Spider.create(new GithubRepoPageProcessor())
-                //从"https://github.com/code4craft"开始抓
-                .addUrl("https://github.com/code4craft/webmagic")
-                //开启1个线程抓取
-                .thread(1)
-                //启动爬虫
-                .run();
     }
 }

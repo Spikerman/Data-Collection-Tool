@@ -1,5 +1,6 @@
 import Downloader.ReviewDataDownLoader;
 import Processor.ReviewPageProcessor;
+import sun.applet.Main;
 import us.codecraft.webmagic.Spider;
 
 /**
@@ -8,15 +9,9 @@ import us.codecraft.webmagic.Spider;
 public class Testing {
 
     public static void main(String args[]) {
-        String appId = "893217990";
-        ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
-
-        ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor(appId);
-
-        Spider.create(reviewPageProcessor)
-                .addUrl(ReviewPageProcessor.INITIAL_URL)
-                .thread(5)
-                .setDownloader(reviewDataDownloader)
-                .run();
+        MainCrawler mainCrawler=new MainCrawler();
+        mainCrawler.buildCandidateClusterMap();
+        String appId="1111925955";
+        mainCrawler.fetchAppReviewData(0,appId);
     }
 }

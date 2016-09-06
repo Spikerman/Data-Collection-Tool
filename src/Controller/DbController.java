@@ -8,11 +8,12 @@ import java.sql.SQLException;
 /**
  * Created by chenhao on 2/15/16.
  */
+
 public class DbController {
     public static final String url = "jdbc:mysql://localhost/Data";
     public static final String name = "com.mysql.jdbc.Driver";
-    public static final String user = "root";
-    public static final String password = "root";
+    public static final String user = "GroupTie";
+    public static final String password = "grouptie123456";
 
     public static final String insertReviewSql
             = "insert into Review (id,userId,appId,rate,version,date) values(?,?,?,?,?,?)";
