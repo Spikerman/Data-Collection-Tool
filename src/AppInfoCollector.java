@@ -121,11 +121,7 @@ public class AppInfoCollector {
     }
 
     public static boolean checkIntegrity(AppInfoController appInfoController) {
-        if (appInfoController.getAppDataList().size() != 800) {
-            return false;
-        } else {
-            return true;
-        }
+        return appInfoController.getAppDataList().size() == 800;
     }
 
 }

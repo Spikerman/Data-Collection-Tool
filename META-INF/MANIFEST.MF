@@ -11,5 +11,5 @@ Class-Path: lib/assertj-core-1.5.0.jar lib/commons-codec-1.6.jar lib/c
  ctor-java-5.1.38-bin.jar lib/okhttp-3.1.1.jar lib/org.json.jar lib/sl
  f4j-api-1.7.6.jar lib/slf4j-log4j12-1.7.6.jar lib/webmagic-core-0.5.1
  .jar lib/webmagic-extension-0.5.1.jar lib/xsoup-0.2.2.jar
-Main-Class: MainCrawler
+Main-Class: AppReviewCrawler
 

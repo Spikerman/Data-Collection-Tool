@@ -14,7 +14,9 @@ import java.util.*;
 /**
  * Created by chenhao on 4/10/16.
  */
-public class MainCrawler {
+
+//为数据库中的应用获取各个应用下的所有评论信息
+public class AppReviewCrawler {
     public Map<Integer, Set<String>> candidateClusterMap = new HashMap<>();
     public ReviewDataDownLoader reviewDataDownloader = new ReviewDataDownLoader();
     public Set<String> baseAppSet = new HashSet<>();//存取数据库中已有的APP记录
@@ -22,7 +24,7 @@ public class MainCrawler {
     private Set<String> unavailableAppSet = new HashSet<>();
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public MainCrawler() {
+    public AppReviewCrawler() {
         dbController.setSelectCandidateClusterSqlPst(DbController.selectCandidateCluster);
         dbController.setInsertAuthorPst(DbController.insertAuthorSql);
         dbController.setInsertReviewPst(DbController.insertReviewSql);
@@ -30,14 +32,14 @@ public class MainCrawler {
 
         //读取数据库中已有的APP记录
         loadReviewData();
+
+        //对数据库中读取的记录按照组号构建 Map
+        buildCandidateClusterMap();
     }
 
     public static void main(String args[]) {
-        MainCrawler mainCrawler = new MainCrawler();
-        //mainCrawler.getUnavailableApp();
-        mainCrawler.buildCandidateClusterMap();
-        //mainCrawler.filterRemovedApp();
-        mainCrawler.startFetch();
+        AppReviewCrawler appReviewCrawler = new AppReviewCrawler();
+        appReviewCrawler.startFetch();
     }
 
 
@@ -135,7 +137,6 @@ public class MainCrawler {
     }
 
     public void fetchAppReviewData(int cluster, String appId) {
-
         if (!baseAppSet.contains(appId)) {
             ReviewPageProcessor reviewPageProcessor = new ReviewPageProcessor(appId);
             Spider.create(reviewPageProcessor)
@@ -143,9 +144,7 @@ public class MainCrawler {
                     .thread(5)
                     .setDownloader(reviewDataDownloader)
                     .run();
-
             Set<Review> reviewSet = reviewPageProcessor.getReviewSet();
-
             for (Review review : reviewSet) {
                 try {
                     insertReview(review, dbController);
@@ -173,7 +172,6 @@ public class MainCrawler {
             while (setIterator.hasNext()) {
                 String appId = (String) setIterator.next();
                 fetchAppReviewData(clusterId, appId);
-
             }
             logger.info("cluster ", clusterId, " has finished");
         }

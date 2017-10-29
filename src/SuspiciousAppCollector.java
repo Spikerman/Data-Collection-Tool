@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Created by chenhao on 2/18/16.
  */
-public class DataCrawler {
+public class SuspiciousAppCollector {
 
     public static AppStoreRankProcessor appStoreRankProcessor = new AppStoreRankProcessor();
     public static FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
@@ -33,26 +33,14 @@ public class DataCrawler {
 
 
     public static void main(String args[]) {
-
-//        Spider.create(appStoreRankProcessor)
-//                .addUrl(AppStoreRankProcessor.PAID_PAGE_URL)
-//                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
-//                .thread(1)
-//                .setDownloader(reviewDataDownloader)
-//                .run();
-
         Spider.create(floatRankPageProcessor)
                 .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
                 .thread(1)
                 .setDownloader(dataDownloader)
                 .run();
-
-
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
-
         List<AppData> dataList = appInfoController.fetchAppDetailInfo();
-
         if (dataList != null) {
             for (AppData appData : dataList) {
                 System.out.println(appData.ranking + "  " + appData.rankType + " " + appData.id + "  " + "  " + appData.averageUserRating + "  " + appData.userRatingCount + "  "
@@ -65,22 +53,12 @@ public class DataCrawler {
             }
         }
 
-
-//        proxyProcessor.setScrapePageCount(10);
-//        Spider.create(proxyProcessor)
-//                .addUrl(proxyProcessor.INITIAL_URL)
-//                .thread(3)
-//                .setDownloader(reviewDataDownloader)
-//                .run();
-
-
         List appIdList = appInfoController.getAppIdList();
         appIdList = Toolkit.removeDuplicate(appIdList);
         appIdList = appIdList.subList(0, 3);
 
         for (Object id : appIdList) {
             reviewPageProcessor = new ReviewPageProcessor(id.toString());
-
             Spider.create(reviewPageProcessor)
                     .addUrl(ReviewPageProcessor.INITIAL_URL)
                     .thread(20)
@@ -140,14 +118,8 @@ public class DataCrawler {
 
     }
 
+    //获取排名浮动大的应用的 Id
     public void fetchAllAppId() {
-//        Spider.create(appStoreRankProcessor)
-//                .addUrl(AppStoreRankProcessor.FLOW_UP_FREE_URL)
-//                .addPipeline(new AppStorePaidRankPipeline(appInfoController))
-//                .thread(1)
-//                .setDownloader(reviewDataDownloader)
-//                .run();
-
         Spider.create(floatRankPageProcessor)
                 .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
@@ -156,6 +128,7 @@ public class DataCrawler {
                 .run();
     }
 
+    //根据获取应用ID，获取这些应用在
     public void fetchAllAppInfo() {
         dbController.setInsertAppInfoPst(DbController.insertAppInfoSql);
         List<AppData> dataList = appInfoController.fetchAppDetailInfo();

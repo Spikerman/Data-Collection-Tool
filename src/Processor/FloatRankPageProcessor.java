@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +31,6 @@ public class FloatRankPageProcessor implements PageProcessor {
     private final String FLOW_UP_PAID_URL = "http://aso100.com/rank/float/float/up/brand/paid";
     private final String FLOW_UP_PAID_GAME_URL = "http://aso100.com/rank/float/float/up/genre/6014/brand/paid";
     private final String FLOW_DOWN_PAID_GAME_URL = "http://aso100.com/rank/float/float/down/brand/paid/genre/6014";
-
     private final String FLOW_UP_FREE_GAME_URL = "http://aso100.com/rank/float/float/up/genre/6014";
     private final String FLOW_DOWN_FREE_GAME_URL = "http://aso100.com/rank/float/float/down/brand/free/genre/6014";
 
@@ -50,19 +48,13 @@ public class FloatRankPageProcessor implements PageProcessor {
         urls.add(FLOW_DOWN_FREE_URL);
         urls.add(FLOW_UP_PAID_URL);
         urls.add(FLOW_DOWN_PAID_URL);
-        //urls.add(FLOW_UP_PAID_GAME_URL);
-        //urls.add(FLOW_DOWN_PAID_GAME_URL);
-        //urls.add(FLOW_UP_FREE_GAME_URL);
-        //urls.add(FLOW_DOWN_FREE_GAME_URL);
         System.out.println("Processor.FloatRankPageProcessor Start!");
-
     }
 
     public static void main(String args[]) {
         FloatRankPageProcessor floatRankPageProcessor = new FloatRankPageProcessor();
         AppInfoController appInfoController = new AppInfoController();
         DbController dbController = new DbController();
-
         Spider.create(floatRankPageProcessor)
                 .addUrl(FloatRankPageProcessor.FLOW_UP_FREE_URL)
                 .addPipeline(new FloatUpRankPipeline(appInfoController))
@@ -135,8 +127,6 @@ public class FloatRankPageProcessor implements PageProcessor {
         List<String> appIdList = new LinkedList<>();
         Document document = page.getHtml().getDocument();
         Elements thumbnails = document.getElementsByClass("thumbnail");
-
-        // Elements contents = document.getElementsByClass("caption");
         for (int i = 0; i < thumbnails.size(); i++) {
             AppData appData = getMetaAppData(thumbnails.get(i), page);
             appDataList.add(appData);
@@ -148,7 +138,6 @@ public class FloatRankPageProcessor implements PageProcessor {
         }
         String url = page.getRequest().getUrl();
         String type;
-
         if (url.equals(FLOW_UP_FREE_URL)) {
             type = AppData.topFreeFlowUp;
         } else if (url.equals(FLOW_DOWN_FREE_URL)) {
@@ -176,32 +165,25 @@ public class FloatRankPageProcessor implements PageProcessor {
 
     public AppData getMetaAppData(Element thumbnail, Page page) {
         String href = thumbnail.child(0).attr("href");
-
         Matcher userIdMatcher = appIdPattern.matcher(href);
         userIdMatcher.find();
         String appId = userIdMatcher.group().replace("appid/", "");
-
         Element caption = thumbnail.getElementsByClass("caption").first();
         String name = caption.getElementsByTag("h5").first().text();
         Elements spans = caption.getElementsByTag("span");
-
         int rankNum;
         if (spans.get(0).text().contains("落榜"))
             rankNum = -1;
         else
             rankNum = Integer.parseInt(spans.get(0).text());
-
         String rankFloatString = spans.get(1).text();
         if (rankFloatString.contains("+"))
             rankFloatString = rankFloatString.replace("+", "");
-
         int rankFloatNum;
         if (spans.get(1).attr("class").equals("down"))
             rankFloatNum = 0 - Integer.valueOf(rankFloatString);
         else
             rankFloatNum = Integer.valueOf(rankFloatString);
-
-
         String type;
         String url = page.getRequest().getUrl();
         if (url.equals(FLOW_UP_FREE_URL)) {
@@ -226,7 +208,6 @@ public class FloatRankPageProcessor implements PageProcessor {
         }
 
         System.out.println(appId + "  " + type + "  " + name + " " + rankNum + "  " + rankFloatNum);
-
         return new AppData(appId, rankNum, rankFloatNum, type);
     }
 
